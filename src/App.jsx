@@ -29,14 +29,14 @@ import {
   Loader2      // Used in ConfirmTransaction and CreateBasketPage
 } from 'lucide-react';
 import './App.css';
-import LandingPage from './pages/landing_page';
-import WalletModal from './pages/modal/wallet_modal';
-import ExplorePage from './pages/explore';
-import BasketDetailPage from './pages/basket/details';
-import ConfirmTransaction from './pages/transactions/confirm_tx';
-import PortfolioPage from './pages/portfolio';
-import CreateBasketPage from './pages/basket/create';
-import SuccessPage  from './pages/success';
+import LandingPage from './src/pages/landing_page';
+import WalletModal from './src/modal/wallet_modal';
+import ExplorePage from './src/pages/explore';
+import BasketDetailPage from './src/pages/basket/details';
+import ConfirmTransaction from './src/pages/transactions/confirm_tx';
+import PortfolioPage from './src/pages/portfolio';
+import CreateBasketPage from './src/pages/basket/create';
+import SuccessPage  from './src/pages/success';
 
 
 
@@ -128,6 +128,7 @@ const stats = [
 ];
 
 const App = () => {
+ 
   const [currentView, setCurrentView] = useState('landing');
   const [selectedBasket, setSelectedBasket] = useState(null);
   const [walletConnected, setWalletConnected] = useState(false);
@@ -162,6 +163,8 @@ const App = () => {
       )}
       {currentView === 'explore' && <ExplorePage
         darkMode={darkMode}
+          setWalletConnected={setWalletConnected}
+        setShowWalletModal={setShowWalletModal}
         setCurrentView={setCurrentView}
         showWalletModal={showWalletModal}
         walletConnected={walletConnected}
@@ -209,8 +212,9 @@ const App = () => {
       {<WalletModal
         showWalletModal={showWalletModal}
         darkMode={darkMode}
+        setWalletConnected={setWalletConnected}
         setShowWalletModal={setShowWalletModal}
-        setWalletConnected={setWalletConnected} />}
+        />}
     </>
   );
 };

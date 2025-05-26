@@ -7,42 +7,33 @@ import {
     ArrowLeft,
     Search,
     Wallet,
-    
-} from 'lucide-react';
 
- const ExplorePage = ({ darkMode, 
+} from 'lucide-react';
+import { useWallet } from '../hook/wallet';
+import Header from '../components/header';
+
+const ExplorePage = ({ darkMode,
     setCurrentView,
     setShowWalletModal,
-     walletConnected,
-     setSearchTerm,
-     searchTerm, 
-     setSelectedBasket ,
+      setWalletConnected,
+    walletConnected,
+    setSearchTerm,
+    searchTerm,
+    setSelectedBasket,
     selectedCategory,
     filteredBaskets,
 }) => {
- return(   <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-        {/* Header */}
-        <header className={`${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg sticky top-0 z-10`}>
-            <div className="max-w-7xl mx-auto px-6 py-4">
-                <div className="flex items-center justify-between">
-                    <button
-                        onClick={() => setCurrentView('landing')}
-                        className="flex items-center gap-2 hover:text-purple-400 transition-colors"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                        Back to Home
-                    </button>
-                    <h1 className="text-2xl font-bold">Basket Explorer</h1>
-                    <button
-                        onClick={() => setShowWalletModal(true)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg ${walletConnected ? 'bg-green-600' : 'bg-purple-600'} text-white hover:opacity-90 transition-opacity`}
-                    >
-                        <Wallet className="w-4 h-4" />
-                        {walletConnected ? 'Connected' : 'Connect Wallet'}
-                    </button>
-                </div>
-            </div>
-        </header>
+
+    return (<div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+        {/* Header Component */}
+        <Header
+            darkMode={darkMode}
+              setWalletConnected={setWalletConnected}
+            setShowWalletModal={setShowWalletModal}
+            setCurrentView={setCurrentView}
+            walletConnected={walletConnected}
+            title="Basket Explorer"
+        />
 
         {/* Filters */}
         <div className="max-w-7xl mx-auto px-6 py-6">

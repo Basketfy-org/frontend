@@ -156,6 +156,7 @@ import {
 
                   <button
                     onClick={() => {
+                    
                       if (!walletConnected) {
                         setShowWalletModal(true);
                       } else if (investAmount) {
@@ -165,7 +166,7 @@ import {
                     disabled={!investAmount}
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg transition-all duration-300"
                   >
-                    {!walletConnected ? 'Connect Wallet to Invest' : 'Buy This Basket'}
+                    {!walletConnected ? 'Connect Wallet to Buy' : 'Buy This Basket'}
                   </button>
                 </div>
 
