@@ -1,0 +1,58 @@
+
+import React, { useState, useEffect } from 'react';
+import {
+   
+    Share2, 
+
+} from 'lucide-react';
+
+
+
+ const SuccessPage = ({ darkMode, setCurrentView,selectedBasket,investAmount }) => {
+    return (<div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${darkMode ? 'text-white' : 'text-gray-900'} flex items-center justify-center`}>
+        <div className={`max-w-md w-full mx-4 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-8 shadow-xl text-center`}>
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-3xl font-bold mb-4">Congratulations!</h2>
+            <p className="text-lg mb-6">You now own the <span className="font-semibold text-purple-400">{selectedBasket?.name}</span>!</p>
+
+            <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} mb-6`}>
+                <div className="text-3xl mb-2">{selectedBasket?.image}</div>
+                <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                        <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>bToken Balance:</span>
+                        <span className="font-medium">{(parseFloat(investAmount || '0') * 0.95).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Basket NFT:</span>
+                        <span className="font-medium">1 NFT</span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="space-y-3">
+                <button
+                    onClick={() => setCurrentView('portfolio')}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300"
+                >
+                    View Portfolio
+                </button>
+                <button
+                    onClick={() => setCurrentView('explore')}
+                    className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} font-medium py-3 px-6 rounded-lg transition-colors`}
+                >
+                    Explore More Baskets
+                </button>
+                <button
+                    className={`w-full flex items-center justify-center gap-2 ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} py-2 transition-colors`}
+                >
+                    <Share2 className="w-4 h-4" />
+                    Share on X
+                </button>
+            </div>
+        </div>
+    </div>
+
+    )
+};
+
+export default SuccessPage;
