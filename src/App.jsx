@@ -37,6 +37,9 @@ import ConfirmTransaction from './src/pages/transactions/confirm_tx';
 import PortfolioPage from './src/pages/portfolio';
 import CreateBasketPage from './src/pages/basket/create';
 import SuccessPage  from './src/pages/success';
+import { getBaskets } from './src/api/basketApi';
+import { getSupportedTokens } from './src/api/okxApi';
+
 
 
 
@@ -128,7 +131,8 @@ const stats = [
 ];
 
 const App = () => {
- 
+ getBaskets("1");
+  getSupportedTokens();
   const [currentView, setCurrentView] = useState('landing');
   const [selectedBasket, setSelectedBasket] = useState(null);
   const [walletConnected, setWalletConnected] = useState(false);
