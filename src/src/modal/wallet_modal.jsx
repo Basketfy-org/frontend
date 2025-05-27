@@ -11,6 +11,7 @@ import { useWallet } from '../hook/wallet';
 
 
 
+
 const WalletModal = ({ showWalletModal, setShowWalletModal, darkMode, setWalletConnected, }) => {
   const {
     connectWallet,

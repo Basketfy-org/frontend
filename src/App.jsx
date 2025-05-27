@@ -135,7 +135,7 @@ const App = () => {
   const [investAmount, setInvestAmount] = useState('');
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [transactionStep, setTransactionStep] = useState(0);
-  const [isCreating, setIsCreating] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [darkMode, setDarkMode] = useState(true);
@@ -203,12 +203,11 @@ const App = () => {
         />}
       {currentView === 'create' && <CreateBasketPage
         darkMode={darkMode}
-        setDarkMode={setDarkMode}
         setCurrentView={setCurrentView}
-        setSelectedBasket={setSelectedBasket}
-        mockBaskets={mockBaskets}
-        stats={stats}
-        features={features} />}
+        setWalletConnected={setWalletConnected}
+        walletConnected={walletConnected}
+        setShowWalletModal={setShowWalletModal}
+         />}
       {<WalletModal
         showWalletModal={showWalletModal}
         darkMode={darkMode}

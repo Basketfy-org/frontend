@@ -9,7 +9,6 @@ import {
     Wallet,
 
 } from 'lucide-react';
-import { useWallet } from '../hook/wallet';
 import Header from '../components/header';
 
 const ExplorePage = ({ darkMode,
@@ -86,7 +85,7 @@ const ExplorePage = ({ darkMode,
 
                         <div className="grid grid-cols-2 gap-4 mb-4">
                             <div>
-                                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>7D Performance</p>
+                                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>7Days Performance</p>
                                 <div className="flex items-center gap-1">
                                     {basket.performance7d > 0 ?
                                         <TrendingUp className="w-3 h-3 text-green-400" /> :

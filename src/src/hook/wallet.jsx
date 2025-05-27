@@ -1,6 +1,22 @@
 // hooks/useWallet.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import   {Connection}  from '@solana/web3.js';
+  import { Program,AnchorProvider,} from '@coral-xyz/anchor';
+import idl from '../components/contract/basketfy.json';
+import * as anchor from '@coral-xyz/anchor';
+const METADATA_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
+import {
+  Keypair,
+  PublicKey,
+  SYSVAR_RENT_PUBKEY,
+  SystemProgram,
+
+} from '@solana/web3.js';
+import {
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
+
+
 // Wallet Context
 const WalletContext = createContext({});
 
@@ -134,13 +150,13 @@ export const WalletProvider = ({ children }) => {
 
   const setupAnchorProvider = (walletAdapter) => {
     try {
-      // In a real app, you'd do:
-      // const { AnchorProvider } = require('@coral-xyz/anchor');
-      // const provider = new AnchorProvider(connection, walletAdapter, {
-      //   commitment: 'confirmed',
-      //   preflightCommitment: 'confirmed',
-      // });
-      // setAnchorProvider(provider);
+    
+
+      const provider = new AnchorProvider(connection, walletAdapter, {
+        commitment: 'confirmed',
+        preflightCommitment: 'confirmed',
+      });
+      setAnchorProvider(provider);
       
       console.log('Anchor provider setup for wallet:', walletAdapter);
     } catch (error) {
@@ -240,13 +256,14 @@ export const WalletProvider = ({ children }) => {
     }
 
     try {
-      // In a real app, you'd use:
-      // const signature = await connection.sendTransaction(transaction, [wallet], options);
-      // const confirmation = await connection.confirmTransaction(signature, 'confirmed');
-      // return { signature, confirmation };
       
-      console.log('Sending transaction:', transaction);
-      return { signature: 'mock_signature', confirmation: 'confirmed' };
+      const signature = await connection.sendTransaction(transaction, [wallet], options);
+      const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+       console.log('Sending transaction:', transaction);
+      return { signature, confirmation };
+      
+     
+    
     } catch (error) {
       console.error('Transaction send error:', error);
       throw error;
@@ -259,13 +276,13 @@ export const WalletProvider = ({ children }) => {
     }
 
     try {
-      // In a real app:
-      // const { PublicKey } = require('@solana/web3.js');
-      // const publicKey = new PublicKey(walletAddress);
-      // const balance = await connection.getBalance(publicKey);
-      // return balance / 1000000000; // Convert lamports to SOL
+ 
       
-      return 1.5; // Mock balance
+      const publicKey = new PublicKey(walletAddress);
+      const balance = await connection.getBalance(publicKey);
+      return balance / 1000000000; // Convert lamports to SOL
+      
+    
     } catch (error) {
       console.error('Balance fetch error:', error);
       return 0;
@@ -292,6 +309,111 @@ export const WalletProvider = ({ children }) => {
     }
   };
 
+
+
+
+
+const findFactoryPDA = (programId) =>
+  PublicKey.findProgramAddressSync([Buffer.from("factory")], programId);
+
+const findConfigPDA = (factory, basketCount) =>
+  PublicKey.findProgramAddressSync(
+    [
+      Buffer.from("config"),
+      factory.toBuffer(),
+      Buffer.from(Uint8Array.from(new anchor.BN(basketCount).toArray("le", 8)))
+    ],
+    new PublicKey(idl.metadata.address)
+  );
+
+const findMintAuthorityPDA = (config) =>
+  PublicKey.findProgramAddressSync(
+    [Buffer.from("mint-authority"), config.toBuffer()],
+    new PublicKey(idl.metadata.address)
+  );
+
+const findMetadataPDA = (mint) =>
+  PublicKey.findProgramAddressSync(
+    [
+      Buffer.from("metadata"),
+      METADATA_PROGRAM_ID.toBuffer(),
+      mint.toBuffer()
+    ],
+    METADATA_PROGRAM_ID
+  );
+
+const createBasket = async (
+  name,
+  symbol,
+  uri,
+  decimals,
+  tokenMints,
+  weights
+) => {
+  if (!name || !symbol || !uri || !decimals || !tokenMints || !weights) {
+    throw new Error("All parameters are required to create a basket");
+  }
+  if (tokenMints.length !== weights.length) {
+    throw new Error("Token mints and weights must have the same length");
+  }
+  if (tokenMints.length < 2 || tokenMints.length > 10) {
+    throw new Error("Token mints must be between 2 and 10");
+  }
+  if (weights.reduce((a, b) => a + b, 0) !== 100) {
+    throw new Error("Weights must sum to 100");
+  }
+  // covert weight to anchor.BN
+
+  const weightsBN = weights.map(weight => new anchor.BN(weight));
+  if (!Array.isArray(weightsBN) || weightsBN.length !== tokenMints.length) {
+    throw new Error("Weights must be an array with the same length as token mints");
+  }
+  //convert tokenMints to PublicKey
+  const tokenMintsPublicKey = tokenMints.map(mint => new PublicKey(mint));
+  if (!Array.isArray(tokenMintsPublicKey) || tokenMintsPublicKey.length !== tokenMints.length) {
+    throw new Error("Token mints must be an array with the same length as weights");
+  }
+
+  if (!anchorProvider || !wallet || !connection) throw new Error("Wallet not ready");
+
+  const payer = wallet.publicKey;
+  const program = new Program(idl, new PublicKey(idl.metadata.address), anchorProvider);
+
+  const mintKeypair = Keypair.generate();
+
+  const [factoryPDA] = findFactoryPDA(program.programId);
+  const factoryAccount = await program.account.factoryState.fetch(factoryPDA);
+  const basketCount = factoryAccount.basketCount.toNumber();
+
+  const [configPDA] = findConfigPDA(factoryPDA, basketCount);
+  const [mintAuthorityPDA] = findMintAuthorityPDA(configPDA);
+  const [metadataPDA] = findMetadataPDA(mintKeypair.publicKey);
+
+  const tx = await program.methods
+    .createBasket(name, symbol, uri, decimals, tokenMintsPublicKey, weightsBN)
+    .accounts({
+      payer,
+      config: configPDA,
+      mintAuthority: mintAuthorityPDA,
+      metadataAccount: metadataPDA,
+      mintAccount: mintKeypair.publicKey,
+      tokenMetadataProgram: METADATA_PROGRAM_ID,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      systemProgram: SystemProgram.programId,
+      rent: SYSVAR_RENT_PUBKEY,
+    })
+    .signers([mintKeypair])
+    .rpc();
+
+  console.log("Basket created successfully:", tx);
+  return {
+    transactionSignature: tx,
+    mintAddress: mintKeypair.publicKey.toBase58(),
+    config: configPDA.toBase58()
+  };
+};
+
+
   const value = {
     // State
     wallet,
@@ -311,6 +433,7 @@ export const WalletProvider = ({ children }) => {
     sendTransaction,
     getBalance,
     executeAnchorProgram,
+    createBasket,
     
     // Utilities
     formatAddress: (address) => address ? `${address.slice(0, 4)}...${address.slice(-4)}` : '',
