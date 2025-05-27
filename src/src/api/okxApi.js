@@ -1,15 +1,15 @@
-const OKX_BASE_URL =import.meta.env.VITE_OKX_API_URL;
+const OKX_BASE_URL = import.meta.env.VITE_OKX_API_URL;
 import CryptoJS from 'crypto-js';
 import { apiRequest } from "./api";
 
-const allTokensEndpoint = '/market/supported/chain?chainIndex=501';
-
-const generateHeaders = (endpoint) => {
+const generateHeaders = (endpoint, method = 'GET', body = '') => {
     const timestamp = new Date().toISOString();
     const secret = import.meta.env.VITE_OKX_API_SECRET;
-    // You also need to generate OK-ACCESS-SIGN here using HMAC-SHA256
-    const prehashString = timestamp + 'GET' + endpoint;
-    const sign = CryptoJS.enc.Base64.stringify(CryptoJS.HmacSHA256(prehashString, secret));
+
+    const prehashString = timestamp + method.toUpperCase() + endpoint + (body || '');
+    const sign = CryptoJS.enc.Base64.stringify(
+        CryptoJS.HmacSHA256(prehashString, secret)
+    );
 
     return {
         'Content-Type': 'application/json',
@@ -20,8 +20,11 @@ const generateHeaders = (endpoint) => {
     };
 };
 
-export const getSupportedTokens = () => {
-  
-   return  apiRequest(OKX_BASE_URL, 'GET',generateHeaders(allTokensEndpoint), '/aggregator/all-tokens?chainIndex=501')
-};
+export const getSupportedTokens = async () => {
+    console.log("Fetching supported tokens from OKX API");
+    const method = 'GET';
+    const endpoint = '/market/supported/chain?chainIndex=501';
+    const headers = generateHeaders(endpoint, method);
 
+    return await apiRequest(OKX_BASE_URL, method, headers, endpoint);
+};

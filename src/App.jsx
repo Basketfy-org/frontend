@@ -42,6 +42,7 @@ import { getBaskets } from './src/api/basketApi';
 
 
 
+
 // Mock data
 const mockBaskets = [
   {
@@ -153,8 +154,10 @@ const App = () => {
     return matchesSearch && matchesCategory;
   });
 
+ 
  useEffect(() => {
     const fetchBaskets = async () => {
+ 
       try {
         setLoading(true);
         const response = await getBaskets("100");
