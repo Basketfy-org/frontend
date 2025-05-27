@@ -24,7 +24,7 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
     wallet,
     setAnchorProvider,
     formatAddress,
-      getBalance,
+    getBalance,
     createBasket,
   } = useWallet();
   const availableTokens = [
@@ -39,8 +39,8 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
 
   const totalWeight = Object.values(tokenWeights).reduce((sum, weight) => sum + (parseFloat(weight) || 0), 0);
 
- 
- 
+
+
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${darkMode ? 'text-white' : 'text-gray-900'}`}>
       {/* Header Component */}
@@ -209,7 +209,7 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
 
             <button
               onClick={async () => {
-                if(getBalance() < 0.01) {
+                if (getBalance() < 0.01) {
                   alert('You need at least 0.01 SOL to create a basket');
                 }
                 if (basketName && basketDescription && selectedTokens.length > 0 && totalWeight === 100) {
@@ -245,7 +245,7 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
                   try {
                     // Fixed: Use basketPayload.tokens instead of selectedTokens.tokens
                     const tokenMints = basketPayload.tokens.map(token => token.tokenAddress);
-                    const tokenWeightsArray = basketPayload.tokens.map(token =>parseFloat (token.weight)  );
+                    const tokenWeightsArray = basketPayload.tokens.map(token => parseFloat(token.weight));
 
 
                     const result = await createBasket(
@@ -259,7 +259,7 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
 
                     console.log('Basket created successfully:', result["transactionSignature"]);
                     basketPayload.address = result["mintAddress"];
-
+                    basketPayload.basketId = result["basketId"];
                     if (result["transactionSignature"] !== null) {
                       const data = await saveBasket(basketPayload);
                       console.log('Basket created:', data);

@@ -4,7 +4,7 @@ import { Connection, PublicKey, LAMPORTS_PER_SOL, SYSVAR_RENT_PUBKEY, SystemProg
 import { AnchorProvider } from '@coral-xyz/anchor';
 import idl from '../components/contract/basketfy.json';
 import * as anchor from '@coral-xyz/anchor';
-import { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, TOKEN_PROGRAM_ID, } from '@solana/spl-token';
 
 // Wallet Context
 const WalletContext = createContext({});
@@ -423,7 +423,8 @@ export const WalletProvider = ({ children }) => {
           uri,
           decimals,
           tokenMints,
-          weights
+          weights,
+          basketId: basketCount.toString(),
         }
       };
 
@@ -432,6 +433,89 @@ export const WalletProvider = ({ children }) => {
       throw {
         success: false,
         error: error.message || 'Failed to create basket'
+      };
+    }
+  };
+
+
+  const buyBasket = async (amount, basketMint) => {
+    if (!wallet || !connected || !program || !anchorProvider) {
+      throw new Error('Wallet not connected or program not initialized');
+    }
+    console.log('Buying basket with amount:', amount, 'and basketMint:', basketMint);
+    try {
+      const payer = new PublicKey(walletAddress);
+      basketMint = new PublicKey(basketMint);
+
+         // Get the token account of the sender
+        const userTokenAccount = await getAssociatedTokenAddress(
+            basketMint,
+            payer
+        );
+
+        // Check if token account exists, if not create it
+        try {
+            await program.provider.connection.getTokenAccountBalance(userTokenAccount);
+        } catch (error) {
+            console.log("Creating associated token account for sender...");
+            const createATAIx = createAssociatedTokenAccountInstruction(
+               payer,
+                userTokenAccount,
+                payer,
+                basketMint
+            );
+            const tx = new anchor.web3.Transaction().add(createATAIx);
+            await program.provider.sendAndConfirm(tx,[]);
+        }
+
+
+      // Find PDAs
+      const [factoryPDA] = findFactoryPDA(program.programId);
+      const [configPDA] = findConfigPDA(factoryPDA, new anchor.BN(2));
+      const [mintAuthorityPDA] = findMintAuthorityPDA(configPDA);
+
+console.log('Found PDAs:' )
+      console.log('Creating basket mint with:', {
+        userTokenAccount: userTokenAccount.toString(),
+        factoryPDA: factoryPDA.toString(),
+        configPDA: configPDA.toString(),
+        basketMint: basketMint.toString()
+      });
+
+
+      // Create the transaction
+      const tx = await program.methods
+        .mintBasketToken(
+         new anchor.BN(amount * LAMPORTS_PER_SOL) // Convert amount to lamports
+        )
+        .accounts({
+          config: configPDA,
+          mintAuthority: mintAuthorityPDA,
+          mint: basketMint,
+          recipientTokenAccount: userTokenAccount,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+       
+        .rpc();
+
+      console.log("Basket mint created successfully:", tx);
+
+      return {
+        success: true,
+        transactionSignature: tx,
+        configPDA: configPDA.toString(),
+        mintAddress: basketMint.publicKey.toString(),
+        message: `Successfully bought ${amount} of the basket`
+      };
+
+    } catch (error) {
+      console.error("Error buying basket:", error);
+      return {
+        success: false,
+        transactionSignature: "",
+        configPDA: "",
+        mintAddress: "",
+        error: error.message || 'Failed to buy basket'
       };
     }
   };
@@ -504,10 +588,12 @@ export const WalletProvider = ({ children }) => {
     getBalance,
     setAnchorProvider,
 
+
     // Basket operations
     createBasket,
     getFactoryInfo,
     getBasketConfig,
+    buyBasket,
 
     // Utilities
     formatAddress: (address) => address ? `${address.slice(0, 4)}...${address.slice(-4)}` : '',

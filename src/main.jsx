@@ -6,7 +6,7 @@ import { WalletProvider } from './src/hook/wallet.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <WalletProvider>
+    <WalletProvider autoConnect={true}>
     <App />
     </WalletProvider>
 

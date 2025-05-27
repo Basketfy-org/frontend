@@ -9,4 +9,4 @@ const headers= {
 // Specific methods if needed
 export const saveBasket = (data) => apiRequest(API_BASE_URL,'POST',headers, '/create-basket', data);
 export const getBaskets =async (limit) => apiRequest(API_BASE_URL,'GET',headers, `/get-all-basket?limit=${limit}`);
-export const updateBasket = (id, data) => apiRequest(API_BASE_URL,'PUT',headers, `/baskets/${id}`, data);
+export const saveBuyBasket = (id, data) => apiRequest(API_BASE_URL,'POST',headers, `/buy-basket`, data);
