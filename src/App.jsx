@@ -36,9 +36,8 @@ import BasketDetailPage from './src/pages/basket/details';
 import ConfirmTransaction from './src/pages/transactions/confirm_tx';
 import PortfolioPage from './src/pages/portfolio';
 import CreateBasketPage from './src/pages/basket/create';
-import SuccessPage  from './src/pages/success';
+import SuccessPage from './src/pages/success';
 import { getBaskets } from './src/api/basketApi';
-import { getSupportedTokens } from './src/api/okxApi';
 
 
 
@@ -131,9 +130,10 @@ const stats = [
 ];
 
 const App = () => {
- getBaskets("1");
-  getSupportedTokens();
+
+
   const [currentView, setCurrentView] = useState('landing');
+  const [baskets, setBaskets] = useState([]);
   const [selectedBasket, setSelectedBasket] = useState(null);
   const [walletConnected, setWalletConnected] = useState(false);
   const [investAmount, setInvestAmount] = useState('');
@@ -143,13 +143,43 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [darkMode, setDarkMode] = useState(true);
+   const [loading, setLoading] = useState(false);
 
-  const filteredBaskets = mockBaskets.filter(basket => {
+
+ const filteredBaskets = baskets.filter(basket => {
     const matchesSearch = basket.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       basket.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || basket.category.toLowerCase() === selectedCategory.toLowerCase();
     return matchesSearch && matchesCategory;
   });
+
+ useEffect(() => {
+    const fetchBaskets = async () => {
+      try {
+        setLoading(true);
+        const response = await getBaskets("100");
+        if (response && response.data) {
+          console.log("Fetched Baskets:", response.data);
+          setBaskets(response.data);
+        } else {
+          console.error("Failed to fetch baskets:", response);
+        }
+      } catch (error) {
+        console.error("Error fetching baskets:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBaskets();
+  }, []); // Removed filteredBaskets, searchTerm, selectedCategory from dependencies
+
+  if (loading) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   // Main render
   return (
@@ -167,13 +197,14 @@ const App = () => {
       )}
       {currentView === 'explore' && <ExplorePage
         darkMode={darkMode}
-          setWalletConnected={setWalletConnected}
+        setWalletConnected={setWalletConnected}
         setShowWalletModal={setShowWalletModal}
         setCurrentView={setCurrentView}
         showWalletModal={showWalletModal}
         walletConnected={walletConnected}
         setSearchTerm={setSearchTerm}
         searchTerm={searchTerm}
+        setSelectedCategory={setSelectedCategory}
         setSelectedBasket={setSelectedBasket}
         selectedCategory={selectedCategory}
         filteredBaskets={filteredBaskets}
@@ -204,20 +235,20 @@ const App = () => {
         setCurrentView={setCurrentView}
         investAmount={investAmount}
         selectedBasket={selectedBasket}
-        />}
+      />}
       {currentView === 'create' && <CreateBasketPage
         darkMode={darkMode}
         setCurrentView={setCurrentView}
         setWalletConnected={setWalletConnected}
         walletConnected={walletConnected}
         setShowWalletModal={setShowWalletModal}
-         />}
+      />}
       {<WalletModal
         showWalletModal={showWalletModal}
         darkMode={darkMode}
         setWalletConnected={setWalletConnected}
         setShowWalletModal={setShowWalletModal}
-        />}
+      />}
     </>
   );
 };

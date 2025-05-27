@@ -20,21 +20,8 @@ const generateHeaders = (endpoint) => {
     };
 };
 
-import { RestClient } from 'okx-api';
-
-const client = new RestClient({
-
-  apiKey:  import.meta.env.VITE_OKX_API_KEY,
-  apiSecret:import.meta.env.VITE_OKX_API_SECRET,
-  apiPass: import.meta.env.VITE_OKX_API_PASSPHRASE,
-});
-
-client.getSupportCoin()
-console.log(client.getSupportCoin())
-// Specific methods if needed
-
 export const getSupportedTokens = () => {
-   console.log(client.getSupportCoin())
+  
    return  apiRequest(OKX_BASE_URL, 'GET',generateHeaders(allTokensEndpoint), '/aggregator/all-tokens?chainIndex=501')
 };
 

@@ -20,9 +20,10 @@ const ExplorePage = ({ darkMode,
     searchTerm,
     setSelectedBasket,
     selectedCategory,
+    setSelectedCategory,
     filteredBaskets,
 }) => {
-
+console.log("explore-filteredBaskets",filteredBaskets)
     return (<div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${darkMode ? 'text-white' : 'text-gray-900'}`}>
         {/* Header Component */}
         <Header
