@@ -44,7 +44,7 @@ import SuccessPage  from './src/pages/success';
 const mockBaskets = [
   {
     id: 1,
-    name: "AI Basket",
+    name: "AI Projects Basket",
     description: "Top AI and machine learning tokens on Solana",
     creator: "AI Research DAO",
     performance7d: 12.5,

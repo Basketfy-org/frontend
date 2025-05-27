@@ -1,24 +1,16 @@
 // hooks/useWallet.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import   {Connection}  from '@solana/web3.js';
-  import { Program,AnchorProvider,} from '@coral-xyz/anchor';
+import { Connection, PublicKey, LAMPORTS_PER_SOL, SYSVAR_RENT_PUBKEY, SystemProgram, Keypair } from '@solana/web3.js';
+import { AnchorProvider } from '@coral-xyz/anchor';
 import idl from '../components/contract/basketfy.json';
 import * as anchor from '@coral-xyz/anchor';
-const METADATA_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
-import {
-  Keypair,
-  PublicKey,
-  SYSVAR_RENT_PUBKEY,
-  SystemProgram,
-
-} from '@solana/web3.js';
-import {
-  TOKEN_PROGRAM_ID,
-} from '@solana/spl-token';
-
+import { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 // Wallet Context
 const WalletContext = createContext({});
+
+// Constants
+const METADATA_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
 
 // Wallet Provider Component
 export const WalletProvider = ({ children }) => {
@@ -29,6 +21,7 @@ export const WalletProvider = ({ children }) => {
   const [walletType, setWalletType] = useState('');
   const [connection, setConnection] = useState(null);
   const [anchorProvider, setAnchorProvider] = useState(null);
+  const [program, setProgram] = useState(null);
 
   // Initialize Solana connection
   useEffect(() => {
@@ -36,27 +29,45 @@ export const WalletProvider = ({ children }) => {
     checkExistingConnection();
   }, []);
 
+  // Initialize program when anchor provider is set
+  useEffect(() => {
+    if (anchorProvider) {
+      initializeProgram();
+    }
+  }, [anchorProvider]);
+
   const initializeSolanaConnection = () => {
     try {
       // You can switch between devnet, testnet, mainnet-beta
-       const rpcUrl = 'https://api.devnet.solana.com';
-        //process.env.REACT_APP_SOLANA_RPC_URL ||;
-      
-      // Note: In a real app, you'd import from @solana/web3.js
-      
-       const conn = new Connection(rpcUrl, 'confirmed');
-       setConnection(conn);
-      
+      const rpcUrl = 'https://api.devnet.solana.com';
+      //process.env.REACT_APP_SOLANA_RPC_URL ||;
+
+      const conn = new Connection(rpcUrl, 'confirmed');
+      setConnection(conn);
+
       console.log('Solana connection initialized:', rpcUrl);
     } catch (error) {
       console.error('Failed to initialize Solana connection:', error);
     }
   };
 
+  const initializeProgram = () => {
+    try {
+      if (!anchorProvider) return;
+
+      const programInstance = new anchor.Program(idl, anchorProvider);
+      setProgram(programInstance);
+
+      console.log('Program initialized:', programInstance.programId.toString());
+    } catch (error) {
+      console.error('Failed to initialize program:', error);
+    }
+  };
+
   const checkExistingConnection = async () => {
     const savedAddress = sessionStorage.getItem('walletAddress');
     const savedWalletType = sessionStorage.getItem('walletType');
-    
+
     if (savedAddress && savedWalletType) {
       try {
         await connectWallet(savedWalletType, true);
@@ -70,7 +81,7 @@ export const WalletProvider = ({ children }) => {
 
   const connectWallet = async (type, skipPrompt = false) => {
     setConnecting(true);
-    
+
     try {
       let walletAdapter;
       let response;
@@ -81,7 +92,7 @@ export const WalletProvider = ({ children }) => {
             throw new Error('Phantom wallet not found. Please install Phantom.');
           }
           walletAdapter = window.solana;
-          response = skipPrompt 
+          response = skipPrompt
             ? await walletAdapter.connect({ onlyIfTrusted: true })
             : await walletAdapter.connect();
           break;
@@ -91,7 +102,7 @@ export const WalletProvider = ({ children }) => {
             throw new Error('Solflare wallet not found. Please install Solflare.');
           }
           walletAdapter = window.solflare;
-          response = skipPrompt 
+          response = skipPrompt
             ? await walletAdapter.connect({ onlyIfTrusted: true })
             : await walletAdapter.connect();
           break;
@@ -101,7 +112,7 @@ export const WalletProvider = ({ children }) => {
             throw new Error('Backpack wallet not found. Please install Backpack.');
           }
           walletAdapter = window.backpack;
-          response = skipPrompt 
+          response = skipPrompt
             ? await walletAdapter.connect({ onlyIfTrusted: true })
             : await walletAdapter.connect();
           break;
@@ -111,7 +122,7 @@ export const WalletProvider = ({ children }) => {
             throw new Error('Coinbase Wallet not found. Please install Coinbase Wallet.');
           }
           walletAdapter = window.coinbaseSolana;
-          response = skipPrompt 
+          response = skipPrompt
             ? await walletAdapter.connect({ onlyIfTrusted: true })
             : await walletAdapter.connect();
           break;
@@ -122,22 +133,22 @@ export const WalletProvider = ({ children }) => {
 
       if (response?.publicKey) {
         const address = response.publicKey.toString();
-        
+
         setWallet(walletAdapter);
         setWalletAddress(address);
         setConnected(true);
         setWalletType(type);
-        
+
         // Store in session
         sessionStorage.setItem('walletAddress', address);
         sessionStorage.setItem('walletType', type);
-        
+
         // Setup Anchor provider for program interactions
         setupAnchorProvider(walletAdapter);
-        
+
         // Setup event listeners
         setupWalletEventListeners(walletAdapter);
-        
+
         return { success: true, address };
       }
     } catch (error) {
@@ -150,15 +161,19 @@ export const WalletProvider = ({ children }) => {
 
   const setupAnchorProvider = (walletAdapter) => {
     try {
-    
+      if (!connection) {
+        console.error('Connection not available for Anchor provider setup');
+        return;
+      }
 
       const provider = new AnchorProvider(connection, walletAdapter, {
         commitment: 'confirmed',
         preflightCommitment: 'confirmed',
       });
+      anchor.setProvider(provider);
       setAnchorProvider(provider);
-      
-      console.log('Anchor provider setup for wallet:', walletAdapter);
+
+      console.log('Anchor provider setup for wallet:', walletAdapter.publicKey?.toString());
     } catch (error) {
       console.error('Failed to setup Anchor provider:', error);
     }
@@ -204,6 +219,7 @@ export const WalletProvider = ({ children }) => {
     setConnected(false);
     setWalletType('');
     setAnchorProvider(null);
+    setProgram(null);
     sessionStorage.removeItem('walletAddress');
     sessionStorage.removeItem('walletType');
   };
@@ -256,14 +272,10 @@ export const WalletProvider = ({ children }) => {
     }
 
     try {
-      
       const signature = await connection.sendTransaction(transaction, [wallet], options);
       const confirmation = await connection.confirmTransaction(signature, 'confirmed');
-       console.log('Sending transaction:', transaction);
+      console.log('Transaction sent:', signature);
       return { signature, confirmation };
-      
-     
-    
     } catch (error) {
       console.error('Transaction send error:', error);
       throw error;
@@ -276,143 +288,200 @@ export const WalletProvider = ({ children }) => {
     }
 
     try {
- 
-      
       const publicKey = new PublicKey(walletAddress);
       const balance = await connection.getBalance(publicKey);
       return balance / 1000000000; // Convert lamports to SOL
-      
-    
     } catch (error) {
       console.error('Balance fetch error:', error);
       return 0;
     }
   };
 
-  const executeAnchorProgram = async (program, method, args = [], accounts = {}) => {
-    if (!anchorProvider) {
-      throw new Error('Anchor provider not initialized');
+  // Helper functions for basket creation
+  const findFactoryPDA = (programId) => {
+    return PublicKey.findProgramAddressSync(
+      [Buffer.from("factory")],
+      programId
+    );
+  };
+
+  const findConfigPDA = (factory, basketCount) => {
+    return PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("config"),
+        factory.toBuffer(),
+        basketCount.toArrayLike(Buffer, "le", 8)
+      ],
+      program.programId
+    );
+  };
+
+  const findMintAuthorityPDA = (config) => {
+    return PublicKey.findProgramAddressSync(
+      [Buffer.from("mint-authority"), config.toBuffer()],
+      program.programId
+    );
+  };
+
+  const findMetadataPDA = (mint) => {
+    return PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("metadata"),
+        METADATA_PROGRAM_ID.toBuffer(),
+        mint.toBuffer()
+      ],
+      METADATA_PROGRAM_ID
+    );
+  };
+
+  // Main basket creation function
+  const createBasket = async (name, symbol, uri, decimals, tokenMints, weights) => {
+    if (!wallet || !connected || !program || !anchorProvider) {
+      throw new Error('Wallet not connected or program not initialized');
     }
 
     try {
-      // In a real app with Anchor:
-      // const tx = await program.methods[method](...args)
-      //   .accounts(accounts)
-      //   .rpc();
-      // return tx;
-      
-      console.log('Executing Anchor program:', { method, args, accounts });
-      return 'mock_transaction_signature';
+
+
+      // Validate inputs
+      if (tokenMints.length === 0 || weights.length === 0) {
+        throw new Error('Token mints and weights are required');
+      }
+
+      if (tokenMints.length !== weights.length) {
+        throw new Error('Token mints and weights arrays must have the same length');
+      }
+
+      const payer = new PublicKey(walletAddress);
+      const mintKeypair = Keypair.generate();
+
+      // Find PDAs
+      const [factoryPDA] = findFactoryPDA(program.programId);
+      const factoryAccount = await program.account.factoryState.fetch(factoryPDA);
+      const basketCount = factoryAccount.basketCount;
+
+      const [configPDA] = findConfigPDA(factoryPDA, basketCount);
+      const [mintAuthorityPDA] = findMintAuthorityPDA(configPDA);
+      const [metadataPDA] = findMetadataPDA(mintKeypair.publicKey);
+
+      console.log('Creating basket with:', {
+        name,
+        symbol,
+        uri,
+        decimals,
+        tokenMints: tokenMints,
+        weights: weights,
+        factoryPDA: factoryPDA.toString(),
+        configPDA: configPDA.toString(),
+        mintKeypair: mintKeypair.publicKey.toString()
+      });
+      // Convert token mint strings to PublicKey objects
+      const tokenMintPublicKeys = tokenMints.map(mint => {
+        try {
+          return new PublicKey(mint);
+        } catch (error) {
+          throw new Error(`Invalid token mint address: ${mint}`);
+        }
+      });
+
+      // Convert weights to anchor.BN (BigNumber) objects
+      const weightsBN = weights.map(weight => new anchor.BN(weight * 100));
+      // Create the transaction
+      const tx = await program.methods
+        .createBasket(
+          name,
+          symbol,
+          uri,
+          decimals,
+          tokenMintPublicKeys,
+          weightsBN
+        )
+        .accounts({
+          payer: payer,
+          config: configPDA,
+          mintAuthority: mintAuthorityPDA,
+          metadataAccount: metadataPDA,
+          mintAccount: mintKeypair.publicKey,
+          tokenMetadataProgram: METADATA_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+          rent: SYSVAR_RENT_PUBKEY,
+        })
+        .signers([mintKeypair])
+        .rpc();
+
+      console.log("Basket created successfully:", tx);
+
+      return {
+        success: true,
+        transactionSignature: tx,
+        configPDA: configPDA.toString(),
+        mintAddress: mintKeypair.publicKey.toString(),
+        basketDetails: {
+          name,
+          symbol,
+          uri,
+          decimals,
+          tokenMints,
+          weights
+        }
+      };
+
     } catch (error) {
-      console.error('Anchor program execution error:', error);
+      console.error("Error creating basket:", error);
+      throw {
+        success: false,
+        error: error.message || 'Failed to create basket'
+      };
+    }
+  };
+
+  // Get factory information
+  const getFactoryInfo = async () => {
+    if (!program) {
+      throw new Error('Program not initialized');
+    }
+
+    try {
+      const [factoryPDA] = findFactoryPDA(program.programId);
+      const factoryAccount = await program.account.factoryState.fetch(factoryPDA);
+
+      return {
+        factoryPDA: factoryPDA.toString(),
+        basketCount: factoryAccount.basketCount.toString(),
+        authority: factoryAccount.authority.toString()
+      };
+    } catch (error) {
+      console.error("Error fetching factory info:", error);
       throw error;
     }
   };
 
+  // Get basket configuration
+  const getBasketConfig = async (configPDA) => {
+    if (!program) {
+      throw new Error('Program not initialized');
+    }
 
+    try {
+      const configPublicKey = new PublicKey(configPDA);
+      const configAccount = await program.account.basketConfig.fetch(configPublicKey);
 
-
-
-const findFactoryPDA = (programId) =>
-  PublicKey.findProgramAddressSync([Buffer.from("factory")], programId);
-
-const findConfigPDA = (factory, basketCount) =>
-  PublicKey.findProgramAddressSync(
-    [
-      Buffer.from("config"),
-      factory.toBuffer(),
-      Buffer.from(Uint8Array.from(new anchor.BN(basketCount).toArray("le", 8)))
-    ],
-    new PublicKey(idl.metadata.address)
-  );
-
-const findMintAuthorityPDA = (config) =>
-  PublicKey.findProgramAddressSync(
-    [Buffer.from("mint-authority"), config.toBuffer()],
-    new PublicKey(idl.metadata.address)
-  );
-
-const findMetadataPDA = (mint) =>
-  PublicKey.findProgramAddressSync(
-    [
-      Buffer.from("metadata"),
-      METADATA_PROGRAM_ID.toBuffer(),
-      mint.toBuffer()
-    ],
-    METADATA_PROGRAM_ID
-  );
-
-const createBasket = async (
-  name,
-  symbol,
-  uri,
-  decimals,
-  tokenMints,
-  weights
-) => {
-  if (!name || !symbol || !uri || !decimals || !tokenMints || !weights) {
-    throw new Error("All parameters are required to create a basket");
-  }
-  if (tokenMints.length !== weights.length) {
-    throw new Error("Token mints and weights must have the same length");
-  }
-  if (tokenMints.length < 2 || tokenMints.length > 10) {
-    throw new Error("Token mints must be between 2 and 10");
-  }
-  if (weights.reduce((a, b) => a + b, 0) !== 100) {
-    throw new Error("Weights must sum to 100");
-  }
-  // covert weight to anchor.BN
-
-  const weightsBN = weights.map(weight => new anchor.BN(weight));
-  if (!Array.isArray(weightsBN) || weightsBN.length !== tokenMints.length) {
-    throw new Error("Weights must be an array with the same length as token mints");
-  }
-  //convert tokenMints to PublicKey
-  const tokenMintsPublicKey = tokenMints.map(mint => new PublicKey(mint));
-  if (!Array.isArray(tokenMintsPublicKey) || tokenMintsPublicKey.length !== tokenMints.length) {
-    throw new Error("Token mints must be an array with the same length as weights");
-  }
-
-  if (!anchorProvider || !wallet || !connection) throw new Error("Wallet not ready");
-
-  const payer = wallet.publicKey;
-  const program = new Program(idl, new PublicKey(idl.metadata.address), anchorProvider);
-
-  const mintKeypair = Keypair.generate();
-
-  const [factoryPDA] = findFactoryPDA(program.programId);
-  const factoryAccount = await program.account.factoryState.fetch(factoryPDA);
-  const basketCount = factoryAccount.basketCount.toNumber();
-
-  const [configPDA] = findConfigPDA(factoryPDA, basketCount);
-  const [mintAuthorityPDA] = findMintAuthorityPDA(configPDA);
-  const [metadataPDA] = findMetadataPDA(mintKeypair.publicKey);
-
-  const tx = await program.methods
-    .createBasket(name, symbol, uri, decimals, tokenMintsPublicKey, weightsBN)
-    .accounts({
-      payer,
-      config: configPDA,
-      mintAuthority: mintAuthorityPDA,
-      metadataAccount: metadataPDA,
-      mintAccount: mintKeypair.publicKey,
-      tokenMetadataProgram: METADATA_PROGRAM_ID,
-      tokenProgram: TOKEN_PROGRAM_ID,
-      systemProgram: SystemProgram.programId,
-      rent: SYSVAR_RENT_PUBKEY,
-    })
-    .signers([mintKeypair])
-    .rpc();
-
-  console.log("Basket created successfully:", tx);
-  return {
-    transactionSignature: tx,
-    mintAddress: mintKeypair.publicKey.toBase58(),
-    config: configPDA.toBase58()
+      return {
+        name: configAccount.name,
+        symbol: configAccount.symbol,
+        decimals: configAccount.decimals,
+        mintAccount: configAccount.mintAccount.toString(),
+        authority: configAccount.authority.toString(),
+        tokenMints: configAccount.tokenMints.map(mint => mint.toString()),
+        weights: configAccount.weights.map(weight => weight.toString()),
+        totalSupply: configAccount.totalSupply.toString()
+      };
+    } catch (error) {
+      console.error("Error fetching basket config:", error);
+      throw error;
+    }
   };
-};
-
 
   const value = {
     // State
@@ -423,7 +492,8 @@ const createBasket = async (
     walletType,
     connection,
     anchorProvider,
-    
+    program,
+
     // Actions
     connectWallet,
     disconnectWallet,
@@ -432,9 +502,13 @@ const createBasket = async (
     signMessage,
     sendTransaction,
     getBalance,
-    executeAnchorProgram,
+    setAnchorProvider,
+
+    // Basket operations
     createBasket,
-    
+    getFactoryInfo,
+    getBasketConfig,
+
     // Utilities
     formatAddress: (address) => address ? `${address.slice(0, 4)}...${address.slice(-4)}` : '',
   };

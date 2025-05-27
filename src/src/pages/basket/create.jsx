@@ -21,21 +21,26 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
   const {
 
     walletAddress,
+    wallet,
+    setAnchorProvider,
     formatAddress,
+      getBalance,
     createBasket,
   } = useWallet();
   const availableTokens = [
-    { ticker: 'SOL', name: 'Solana', price: 145.23, isNative: true, tokenAddress: 'So' },
-    { ticker: 'RNDR', name: 'Render Token', price: 8.45, isNative: false, tokenAddress: 'So' },
-    { ticker: 'RAY', name: 'Raydium', price: 1.85, isNative: false, tokenAddress: 'So' },
-    { ticker: 'ORCA', name: 'Orca', price: 2.17, isNative: false, tokenAddress: 'So' },
-    { ticker: 'MNGO', name: 'Mango', price: 0.089, isNative: false, tokenAddress: 'So' },
-    { ticker: 'FET', name: 'Fetch.ai', price: 0.82, isNative: false, tokenAddress: 'So' },
-    { ticker: 'OCEAN', name: 'Ocean Protocol', price: 0.54, isNative: false, tokenAddress: 'So' }
+    { ticker: 'SOL', name: 'Solana', price: 145.23, isNative: true, tokenAddress: "So11111111111111111111111111111111111111112" },
+    { ticker: 'RNDR', name: 'Render Token', price: 8.45, isNative: false, tokenAddress: "So11111111111111111111111111111111111111112" },
+    { ticker: 'RAY', name: 'Raydium', price: 1.85, isNative: false, tokenAddress: "So11111111111111111111111111111111111111112" },
+    { ticker: 'ORCA', name: 'Orca', price: 2.17, isNative: false, tokenAddress: "So11111111111111111111111111111111111111112" },
+    { ticker: 'MNGO', name: 'Mango', price: 0.089, isNative: false, tokenAddress: "So11111111111111111111111111111111111111112" },
+    { ticker: 'FET', name: 'Fetch.ai', price: 0.82, isNative: false, tokenAddress: "So11111111111111111111111111111111111111112" },
+    { ticker: 'OCEAN', name: 'Ocean Protocol', price: 0.54, isNative: false, tokenAddress: "So11111111111111111111111111111111111111112" }
   ];
 
   const totalWeight = Object.values(tokenWeights).reduce((sum, weight) => sum + (parseFloat(weight) || 0), 0);
 
+ 
+ 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${darkMode ? 'text-white' : 'text-gray-900'}`}>
       {/* Header Component */}
@@ -204,6 +209,9 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
 
             <button
               onClick={async () => {
+                if(getBalance() < 0.01) {
+                  alert('You need at least 0.01 SOL to create a basket');
+                }
                 if (basketName && basketDescription && selectedTokens.length > 0 && totalWeight === 100) {
                   setIsCreating(true);
 
@@ -237,7 +245,7 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
                   try {
                     // Fixed: Use basketPayload.tokens instead of selectedTokens.tokens
                     const tokenMints = basketPayload.tokens.map(token => token.tokenAddress);
-                    const tokenWeightsArray = basketPayload.tokens.map(token => token.weight);
+                    const tokenWeightsArray = basketPayload.tokens.map(token =>parseFloat (token.weight)  );
 
 
                     const result = await createBasket(
@@ -246,7 +254,7 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
                       basketUri,
                       6,
                       tokenMints,
-                      tokenWeightsArray,
+                      tokenWeightsArray
                     )
 
                     console.log('Basket created successfully:', result["transactionSignature"]);

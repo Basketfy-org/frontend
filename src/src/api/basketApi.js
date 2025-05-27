@@ -24,5 +24,5 @@ export const apiRequest = async (method, endpoint, body = null) => {
 
 // Specific methods if needed
 export const saveBasket = (data) => apiRequest('POST', '/create-basket', data);
-export const getBaskets = () => apiRequest('GET', '/baskets');
+export const getBaskets = () => apiRequest('GET', '/get-all-basket');
 export const updateBasket = (id, data) => apiRequest('PUT', `/baskets/${id}`, data);

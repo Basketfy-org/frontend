@@ -90,7 +90,7 @@ export const PortfolioPage = ({ darkMode, setCurrentView, investAmount, selected
 
                     <div className="flex gap-3 mt-6">
                         <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition-colors">
-                            Rebalance
+                           AI Rebalance
                         </button>
                         <button className={`flex-1 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-2 px-4 rounded-lg transition-colors`}>
                             Redeem
