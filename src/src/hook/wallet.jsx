@@ -438,7 +438,7 @@ export const WalletProvider = ({ children }) => {
   };
 
 
-  const buyBasket = async (amount, basketMint) => {
+  const buyBasket = async (amount, basketMint,basketId) => {
     if (!wallet || !connected || !program || !anchorProvider) {
       throw new Error('Wallet not connected or program not initialized');
     }
@@ -471,7 +471,7 @@ export const WalletProvider = ({ children }) => {
 
       // Find PDAs
       const [factoryPDA] = findFactoryPDA(program.programId);
-      const [configPDA] = findConfigPDA(factoryPDA, new anchor.BN(2));
+      const [configPDA] = findConfigPDA(factoryPDA, new anchor.BN(basketId));
       const [mintAuthorityPDA] = findMintAuthorityPDA(configPDA);
 
 console.log('Found PDAs:' )
