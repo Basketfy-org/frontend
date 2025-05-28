@@ -424,7 +424,7 @@ export const WalletProvider = ({ children }) => {
           decimals,
           tokenMints,
           weights,
-          basketId: basketCount.toString(),
+          basketReferenceId: basketCount.toString(),
         }
       };
 

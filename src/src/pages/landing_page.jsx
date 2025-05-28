@@ -14,7 +14,8 @@ import {
     ArrowRight,
 
 } from 'lucide-react';
-import { getSupportedTokens } from '../api/okxApi';
+
+
 
 
 
@@ -24,6 +25,7 @@ export const LandingPage = ({
     setCurrentView, setSelectedBasket,
     mockBaskets, stats,
     features }) => {
+ 
 
 
     return (<div className={`max-w-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-black' : 'bg-gradient-to-br from-white via-purple-50 to-gray-100'} ${darkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
@@ -60,9 +62,10 @@ export const LandingPage = ({
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
                     <button
-                        onClick={async() => {
-                           await getSupportedTokens()
-                            setCurrentView('explore')}}
+                        onClick={async () => {
+
+                            //setCurrentView('explore')
+                        }}
                         className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl"
                     >
                         Explore Baskets

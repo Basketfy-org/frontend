@@ -8,6 +8,8 @@ import {
 import { saveBasket } from '../../api/basketApi';
 import { useWallet } from '../../hook/wallet';
 import Header from '../../components/header';
+import { getBatchToken, getBatchTokenPrice } from '../../api/dexUtils';
+
 
 const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, walletConnected, setShowWalletModal }) => {
   const [basketName, setBasketName] = useState('');
@@ -17,6 +19,7 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
   const [selectedTokens, setSelectedTokens] = useState([]);
   const [tokenWeights, setTokenWeights] = useState({});
   const [isCreating, setIsCreating] = useState(false);
+  const [tokens, setTokens] = useState([]);
 
   const {
 
@@ -38,7 +41,64 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
   ];
 
   const totalWeight = Object.values(tokenWeights).reduce((sum, weight) => sum + (parseFloat(weight) || 0), 0);
+useEffect(() => {
+  // Fetch available tokens when the component mounts
+  getAvailableTokens().then(tokens => {
+    setTokens(tokens);
+  }).catch(error => {
+    console.error("Error fetching available tokens:", error);
+  });
+}, []);
 
+async function getAvailableTokens() {
+    try {
+        // Get token metadata (names, symbols, logos, addresses)
+        const tokenMetadata = await getBatchToken();
+        
+        // Extract contract addresses for price lookup
+        const contractAddresses = tokenMetadata.data.map(token => token.tokenContractAddress);
+        
+        // Get token prices using the extracted addresses
+        const tokenPrices = await getBatchTokenPrice(contractAddresses.join(','));
+        
+        // Create a map for quick price lookup by contract address
+        const priceMap = new Map();
+        tokenPrices.data.forEach(priceData => {
+            priceMap.set(priceData.tokenContractAddress, {
+                price: parseFloat(priceData.price),
+                priceChange24H: priceData.priceChange24H,
+                volume24H: priceData.volume24H,
+                marketCap: priceData.marketCap
+            });
+        });
+        
+        // Merge the data into the desired format
+        const availableTokens = tokenMetadata.data.map(token => {
+            const priceInfo = priceMap.get(token.tokenContractAddress);
+            
+            return {
+                ticker: token.tokenSymbol,
+                name: token.tokenName,
+                price: priceInfo ? priceInfo.price : 0,
+                isNative: token.tokenSymbol === 'SOL', // You can adjust this logic as needed
+                tokenAddress: token.tokenContractAddress,
+                tokenLogoUrl: token.tokenLogoUrl,
+                // Optional: include additional price data
+                priceChange24H: priceInfo ? priceInfo.priceChange24H : null,
+                volume24H: priceInfo ? priceInfo.volume24H : null,
+                marketCap: priceInfo ? priceInfo.marketCap : null
+            };
+        });
+        
+        console.log("Merged available tokens:", availableTokens);
+        return availableTokens;
+        
+    } catch (error) {
+      setTokens(availableTokens);
+        console.error("Failed to get available tokens:", error);
+        throw error;
+    }
+}
 
 
   return (
@@ -115,7 +175,7 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
             <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
               <h2 className="text-xl font-semibold mb-4">Token Selection</h2>
               <div className="space-y-3">
-                {availableTokens.map((token) => (
+                {tokens.map((token) => (
                   <div key={token.ticker} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <input
@@ -226,6 +286,7 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
                     symbol: basketName.slice(0, 6).toUpperCase(),
                     uri: basketUri,
                     image: '',
+                    basketReferenceId: '',
                     address: "",
                     tokens: selectedTokens.map((ticker) => {
                       const token = availableTokens.find(t => t.ticker === ticker);
@@ -259,7 +320,7 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
 
                     console.log('Basket created successfully:', result["transactionSignature"]);
                     basketPayload.address = result["mintAddress"];
-                    basketPayload.basketId = result["basketId"];
+                    basketPayload.basketReferenceId = result["basketDetails"]["basketReferenceId"];
                     if (result["transactionSignature"] !== null) {
                       const data = await saveBasket(basketPayload);
                       console.log('Basket created:', data);

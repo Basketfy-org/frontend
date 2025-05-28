@@ -177,6 +177,7 @@ const BasketDetailPage = ({ darkMode, setCurrentView, selectedBasket, setShowWal
                         "userId": userId,
                         "sessionId": sessionId,
                         "basketData": {
+                          "basketReferenceId": selectedBasket.basketReferenceId,
                           "basketName": selectedBasket.name,
                           "description": selectedBasket.description,
                           "image": selectedBasket.image,
@@ -193,7 +194,7 @@ const BasketDetailPage = ({ darkMode, setCurrentView, selectedBasket, setShowWal
                         const result = await buyBasket(
                           investAmount,
                           selectedBasket.address,
-                          selectedBasket.basketId
+                          selectedBasket.basketReferenceId,
                         )
 
                         console.log('Basket created successfully:', result["transactionSignature"]);

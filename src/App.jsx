@@ -42,7 +42,6 @@ import { getBaskets } from './src/api/basketApi';
 
 
 
-
 // Mock data
 const mockBaskets = [
   {
@@ -131,7 +130,6 @@ const stats = [
 ];
 
 const App = () => {
-
 
   const [currentView, setCurrentView] = useState('landing');
   const [baskets, setBaskets] = useState([]);
