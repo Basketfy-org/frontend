@@ -135,7 +135,7 @@ export async function getBatchTokenPrice(contracts) {
     const timestamp = new Date().toISOString();
     const params = {
         chainIndex: SOLANA_CHAIN_ID,
-        tokenContractAddress:contracts
+        tokenContractAddress:NATIVE_SOL
     };
 
     const requestPath = "/api/v5/dex/market/price-info";
@@ -145,7 +145,7 @@ export async function getBatchTokenPrice(contracts) {
     try {
         const response = await fetch(
             `https://www.okx.com${requestPath}?${queryString}`,
-            { method: "GET", headers }
+            { method: "POST", headers }
         );
 
         if (!response.ok) {

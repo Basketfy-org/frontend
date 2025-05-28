@@ -8,7 +8,7 @@ import {
 import { saveBasket } from '../../api/basketApi';
 import { useWallet } from '../../hook/wallet';
 import Header from '../../components/header';
-import { getBatchToken, getBatchTokenPrice } from '../../api/dexUtils';
+import { getBatchToken, getBatchTokenPrice, NATIVE_SOL, SOLANA_CHAIN_ID } from '../../api/dexUtils';
 
 
 const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, walletConnected, setShowWalletModal }) => {
@@ -58,12 +58,26 @@ async function getAvailableTokens() {
         // Extract contract addresses for price lookup
         const contractAddresses = tokenMetadata.data.map(token => token.tokenContractAddress);
         
-        // Get token prices using the extracted addresses
-        const tokenPrices = await getBatchTokenPrice(contractAddresses.join(','));
-        
+
+        // Step 2: Handle APIs that allow max 100 contract addresses per call
+        const chunkArray = (arr, size) => {
+            const chunks = [];
+            for (let i = 0; i < arr.length; i += size) {
+                chunks.push(arr.slice(i, i + size));
+            }
+            return chunks;
+        };
+
+        const addressChunks = chunkArray(contractAddresses, 100);
+        let allPriceData = [];
+
+        for (const chunk of addressChunks) {
+            const response = await getBatchTokenPrice(chunk.join(','));
+            allPriceData = allPriceData.concat(response.data);
+        }
         // Create a map for quick price lookup by contract address
         const priceMap = new Map();
-        tokenPrices.data.forEach(priceData => {
+        allPriceData.forEach(priceData => {
             priceMap.set(priceData.tokenContractAddress, {
                 price: parseFloat(priceData.price),
                 priceChange24H: priceData.priceChange24H,
@@ -80,7 +94,7 @@ async function getAvailableTokens() {
                 ticker: token.tokenSymbol,
                 name: token.tokenName,
                 price: priceInfo ? priceInfo.price : 0,
-                isNative: token.tokenSymbol === 'SOL', // You can adjust this logic as needed
+                isNative: token.tokenContractAddress === NATIVE_SOL,
                 tokenAddress: token.tokenContractAddress,
                 tokenLogoUrl: token.tokenLogoUrl,
                 // Optional: include additional price data
