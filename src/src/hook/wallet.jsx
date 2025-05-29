@@ -5,6 +5,8 @@ import { AnchorProvider } from '@coral-xyz/anchor';
 import idl from '../components/contract/basketfy.json';
 import * as anchor from '@coral-xyz/anchor';
 import { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, TOKEN_PROGRAM_ID, } from '@solana/spl-token';
+import logger from '../uutils/logger';
+import toast from 'react-hot-toast';
 
 // Wallet Context
 const WalletContext = createContext({});
@@ -44,9 +46,11 @@ export const WalletProvider = ({ children }) => {
       const conn = new Connection(rpcUrl, 'confirmed');
       setConnection(conn);
 
-      console.log('Solana connection initialized:', rpcUrl);
+
+      logger(`Solana connection initialized: ${rpcUrl}`);
     } catch (error) {
-      console.error('Failed to initialize Solana connection:', error);
+
+      logger('Failed to initialize Solana connection:', error);
     }
   };
 
@@ -57,9 +61,11 @@ export const WalletProvider = ({ children }) => {
       const programInstance = new anchor.Program(idl, anchorProvider);
       setProgram(programInstance);
 
-      console.log('Program initialized:', programInstance.programId.toString());
+
+      logger(`Program ID: ${programInstance.programId.toString()}`);
     } catch (error) {
-      console.error('Failed to initialize program:', error);
+
+      logger(`Failed to initialize program:', ${error}`);
     }
   };
 
@@ -71,7 +77,8 @@ export const WalletProvider = ({ children }) => {
       try {
         await connectWallet(savedWalletType, true);
       } catch (error) {
-        console.log('Failed to restore wallet connection:', error);
+
+        logger(`Failed to restore wallet connection:', ${error}`);
         sessionStorage.removeItem('walletAddress');
         sessionStorage.removeItem('walletType');
       }
@@ -88,7 +95,9 @@ export const WalletProvider = ({ children }) => {
       switch (type) {
         case 'phantom':
           if (!window.solana?.isPhantom) {
-            throw new Error('Phantom wallet not found. Please install Phantom.');
+
+            toast.error('Phantom Wallet not found. Please install Phantom.');
+            return;
           }
           walletAdapter = window.solana;
           response = skipPrompt
@@ -98,7 +107,9 @@ export const WalletProvider = ({ children }) => {
 
         case 'solflare':
           if (!window.solflare?.isSolflare) {
-            throw new Error('Solflare wallet not found. Please install Solflare.');
+
+            toast.error('Solflare Wallet not found. Please install Solflare.');
+            return;
           }
           walletAdapter = window.solflare;
           response = skipPrompt
@@ -108,7 +119,9 @@ export const WalletProvider = ({ children }) => {
 
         case 'backpack':
           if (!window.backpack) {
-            throw new Error('Backpack wallet not found. Please install Backpack.');
+
+            toast.error('Backpack Wallet not found. Please install Backpack.');
+            return;
           }
           walletAdapter = window.backpack;
           response = skipPrompt
@@ -118,7 +131,9 @@ export const WalletProvider = ({ children }) => {
 
         case 'coinbase':
           if (!window.coinbaseSolana) {
-            throw new Error('Coinbase Wallet not found. Please install Coinbase Wallet.');
+
+            toast.error('Coinbase Wallet not found. Please install Coinbase Wallet.');
+            return;
           }
           walletAdapter = window.coinbaseSolana;
           response = skipPrompt
@@ -127,7 +142,9 @@ export const WalletProvider = ({ children }) => {
           break;
 
         default:
-          throw new Error('Unsupported wallet type');
+
+          toast.error('Unsupported wallet type');
+          return
       }
 
       if (response?.publicKey) {
@@ -151,7 +168,8 @@ export const WalletProvider = ({ children }) => {
         return { success: true, address };
       }
     } catch (error) {
-      console.error('Wallet connection error:', error);
+
+      logger(`Wallet connection error: ${error.message}`);
       return { success: false, error: error.message };
     } finally {
       setConnecting(false);
@@ -161,7 +179,8 @@ export const WalletProvider = ({ children }) => {
   const setupAnchorProvider = (walletAdapter) => {
     try {
       if (!connection) {
-        console.error('Connection not available for Anchor provider setup');
+
+        logger('Connection not available for Anchor provider setup');
         return;
       }
 
@@ -172,19 +191,23 @@ export const WalletProvider = ({ children }) => {
       anchor.setProvider(provider);
       setAnchorProvider(provider);
 
-      console.log('Anchor provider setup for wallet:', walletAdapter.publicKey?.toString());
+
+      logger(`Anchor provider initialized with wallet: ${walletAdapter.publicKey?.toString()}`);
     } catch (error) {
-      console.error('Failed to setup Anchor provider:', error);
+
+      logger(`Failed to setup Anchor provider: ${error.message}`);
     }
   };
 
   const setupWalletEventListeners = (walletAdapter) => {
     walletAdapter.on('connect', (publicKey) => {
-      console.log('Wallet connected:', publicKey.toString());
+
+      logger(`Wallet connected: ${publicKey.toString()}`);
     });
 
     walletAdapter.on('disconnect', () => {
-      console.log('Wallet disconnected');
+
+      logger('Wallet disconnected');
       handleDisconnect();
     });
 
@@ -193,7 +216,8 @@ export const WalletProvider = ({ children }) => {
         const newAddress = publicKey.toString();
         setWalletAddress(newAddress);
         sessionStorage.setItem('walletAddress', newAddress);
-        console.log('Account changed:', newAddress);
+
+        logger(`Account changed: ${newAddress}`);
       } else {
         handleDisconnect();
       }
@@ -207,7 +231,8 @@ export const WalletProvider = ({ children }) => {
       }
       handleDisconnect();
     } catch (error) {
-      console.error('Disconnect error:', error);
+
+      logger(`Disconnect error: ${error.message}`);
       handleDisconnect(); // Force disconnect even if error
     }
   };
@@ -231,52 +256,70 @@ export const WalletProvider = ({ children }) => {
 
   const signTransaction = async (transaction) => {
     if (!wallet || !connected) {
-      throw new Error('Wallet not connected');
+
+
+      toast.error('Wallet not connected');
+      return;
     }
-if (typeof wallet.signTransaction !== 'function') {
-  throw new Error("Current wallet does not support signing transactions");
-}
+    if (typeof wallet.signTransaction !== 'function') {
+
+      toast.error("Current wallet does not support signing transactions");
+      return;
+
+    }
 
     try {
       const signedTransaction = await wallet.signTransaction(transaction);
       return signedTransaction;
     } catch (error) {
-      console.error('Transaction signing error:', error);
-      throw error;
+
+      toast.error('Transaction signing failed');
+      logger(`Transaction signing error: ${error.message}`);
+      return;
     }
   };
 
   const signAllTransactions = async (transactions) => {
     if (!wallet || !connected) {
-      throw new Error('Wallet not connected');
+
+      toast.error('Wallet not connected');
+      return;
     }
 
     try {
       const signedTransactions = await wallet.signAllTransactions(transactions);
       return signedTransactions;
     } catch (error) {
-      console.error('Multiple transaction signing error:', error);
-      throw error;
+
+      toast.error('Failed to sign multiple transactions');
+      return;
     }
   };
 
   const signMessage = async (message) => {
     if (!wallet || !connected) {
-      throw new Error('Wallet not connected');
+
+      toast.error('Wallet not connected');
+      return;
     }
 
     try {
       const signature = await wallet.signMessage(new TextEncoder().encode(message));
       return signature;
     } catch (error) {
-      console.error('Message signing error:', error);
-      throw error;
+
+      toast.error('Message signing failed');
+      logger(`Message signing error: ${error.message}`);
+
+      return;
     }
   };
 
   const sendTransaction = async (transaction, options = {}) => {
     if (!wallet || !connected || !connection) {
-      throw new Error('Wallet or connection not available');
+
+      toast.error('Wallet or connection not available');
+      return;
     }
 
     try {
@@ -284,11 +327,12 @@ if (typeof wallet.signTransaction !== 'function') {
       const signature = await connection.sendRawTransaction(signedTx.serialize(), options);
 
       const confirmation = await connection.confirmTransaction(signature, 'confirmed');
-      console.log('Transaction sent:', signature);
+      logger(`Transaction confirmed: ${JSON.stringify(confirmation)}`);
       return { signature, confirmation };
     } catch (error) {
-      console.error('Transaction send error:', error);
-      throw error;
+      toast.error('Transaction failed');
+      logger(`Transaction send error: ${error.message}`);
+      return;
     }
   };
 
@@ -302,7 +346,9 @@ if (typeof wallet.signTransaction !== 'function') {
       const balance = await connection.getBalance(publicKey);
       return balance / 1000000000; // Convert lamports to SOL
     } catch (error) {
-      console.error('Balance fetch error:', error);
+
+      toast.error('Failed to fetch balance');
+      logger(`Balance fetch error: ${error.message}`);
       return 0;
     }
   };
@@ -347,7 +393,9 @@ if (typeof wallet.signTransaction !== 'function') {
   // Main basket creation function
   const createBasket = async (name, symbol, uri, decimals, tokenMints, weights) => {
     if (!wallet || !connected || !program || !anchorProvider) {
-      throw new Error('Wallet not connected or program not initialized');
+
+      toast.error('Wallet not connected or program not initialized');
+      return;
     }
 
     try {
@@ -355,11 +403,15 @@ if (typeof wallet.signTransaction !== 'function') {
 
       // Validate inputs
       if (tokenMints.length === 0 || weights.length === 0) {
-        throw new Error('Token mints and weights are required');
+
+        toast.error('Token mints and weights are required');
+        return;
       }
 
       if (tokenMints.length !== weights.length) {
-        throw new Error('Token mints and weights arrays must have the same length');
+
+        toast.error('Token mints and weights must have the same length');
+        return;
       }
 
       const payer = new PublicKey(walletAddress);
@@ -419,9 +471,6 @@ if (typeof wallet.signTransaction !== 'function') {
         })
         .signers([mintKeypair])
         .rpc();
-
-      console.log("Basket created successfully:", tx);
-
       return {
         success: true,
         transactionSignature: tx,
@@ -439,9 +488,13 @@ if (typeof wallet.signTransaction !== 'function') {
       };
 
     } catch (error) {
-      console.error("Error creating basket:", error);
-      throw {
+      toast.error('Failed to create basket');
+      logger(`Basket creation error: ${error.message}`);
+      return {
         success: false,
+        transactionSignature: "",
+        configPDA: "",
+        mintAddress: "",
         error: error.message || 'Failed to create basket'
       };
     }
@@ -450,9 +503,11 @@ if (typeof wallet.signTransaction !== 'function') {
 
   const buyBasket = async (amount, basketMint, basketId) => {
     if (!wallet || !connected || !program || !anchorProvider) {
-      throw new Error('Wallet not connected or program not initialized');
+
+      toast.error('Wallet not connected or program not initialized');
+      return;
     }
-    console.log('Buying basket with amount:', amount, 'and basketMint:', basketMint);
+
     try {
       const payer = new PublicKey(walletAddress);
       basketMint = new PublicKey(basketMint);
@@ -466,10 +521,13 @@ if (typeof wallet.signTransaction !== 'function') {
       // Check if token account exists, if not create it
       try {
         let tokenAccount = await program.provider.connection.getTokenAccountBalance(userTokenAccount);
-        console.log("User token account already exists:", userTokenAccount.toString(), "Balance:", tokenAccount.value.uiAmount);
+
+        logger(`User token account found: ${userTokenAccount.toString()}, Balance: ${tokenAccount.value.uiAmount}`);
       } catch (error) {
         if (error.message.includes("could not find account") || error.message.includes("Failed to find account")) {
-          console.log("Associated token account not found. Creating ATA...");
+
+          toast.info('Associated token account not found. Creating ATA...',
+          );
 
           const createATAIx = createAssociatedTokenAccountInstruction(
             payer,
@@ -479,7 +537,9 @@ if (typeof wallet.signTransaction !== 'function') {
           );
           const tx = new anchor.web3.Transaction().add(createATAIx);
           await program.provider.sendAndConfirm(tx, []);
-          console.log("Associated token account created:", userTokenAccount.toString());
+
+          toast.success('Associated token account created successfully');
+          logger(`Associated token account created: ${userTokenAccount.toString()}`);
         }
       }
 
@@ -490,12 +550,12 @@ if (typeof wallet.signTransaction !== 'function') {
       const [mintAuthorityPDA] = findMintAuthorityPDA(configPDA);
 
 
-      console.log('Creating basket mint with:', {
+      logger(`Creating basket mint with:,${JSON.stringify({
         userTokenAccount: userTokenAccount.toString(),
         factoryPDA: factoryPDA.toString(),
         configPDA: configPDA.toString(),
         basketMint: basketMint.toString()
-      });
+      })}`);
 
 
       // Create the transaction
@@ -513,7 +573,7 @@ if (typeof wallet.signTransaction !== 'function') {
 
         .rpc();
 
-      console.log("Basket token mint created successfully:", tx);
+      logger("Basket token mint created successfully:", tx);
 
       return {
         success: true,
@@ -524,7 +584,7 @@ if (typeof wallet.signTransaction !== 'function') {
       };
 
     } catch (error) {
-      console.error("Error buying basket:", error);
+      logger(`Error buying basket:, ${error}`);
       return {
         success: false,
         transactionSignature: "",
@@ -538,7 +598,9 @@ if (typeof wallet.signTransaction !== 'function') {
   // Get factory information
   const getFactoryInfo = async () => {
     if (!program) {
-      throw new Error('Program not initialized');
+
+      logger('Program not initialized');
+      return;
     }
 
     try {
@@ -551,15 +613,18 @@ if (typeof wallet.signTransaction !== 'function') {
         authority: factoryAccount.authority.toString()
       };
     } catch (error) {
-      console.error("Error fetching factory info:", error);
-      throw error;
+
+      logger(`Error fetching factory info: ${error.message}`);
+      return;
     }
   };
 
   // Get basket configuration
   const getBasketConfig = async (configPDA) => {
     if (!program) {
-      throw new Error('Program not initialized');
+
+      logger('Program not initialized');
+      return;
     }
 
     try {
@@ -577,8 +642,9 @@ if (typeof wallet.signTransaction !== 'function') {
         totalSupply: configAccount.totalSupply.toString()
       };
     } catch (error) {
-      console.error("Error fetching basket config:", error);
-      throw error;
+
+      logger(`Error fetching basket config: ${error.message}`);
+      return;
     }
   };
 

@@ -41,6 +41,7 @@ import { getBaskets } from './src/api/basketApi';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import CreateSuccessPage from './src/pages/basket/create_success';
 import HowItWorks from './src/components/how_it_works';
+import logger from './src/uutils/logger';
 
 
 
@@ -169,13 +170,16 @@ useEffect(() => {
       clearTimeout(timeoutId);
       
       if (response && response.data) {
-        console.log("Fetched Baskets:", response.data);
+        
+        logger("Fetched Baskets:", response.data);
         setBaskets(response.data);
       } else {
-        console.error("Failed to fetch baskets:", response);
+       
+        logger("Failed to fetch baskets:", response);
       }
     } catch (error) {
-      console.error("Error fetching baskets:", error);
+
+      logger("Error fetching baskets:", error);
     } finally {
       // Ensure loading is false
       setLoading(false);

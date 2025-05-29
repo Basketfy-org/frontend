@@ -16,6 +16,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/header';
 import { showErrorAlert } from '../../components/alert';
 import toast from 'react-hot-toast';
+import logger from '../../uutils/logger';
 
 const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
 
@@ -200,7 +201,8 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
                       }
 
 
-                      console.log(buyBasketData, investAmount);
+                 
+                      logger(`${buyBasketData}, ${investAmount}`);
                       try {
                         const result = await buyBasket(
                           investAmount,
@@ -211,14 +213,17 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
 
 
                         if (result["transactionSignature"] !== null && result["success"]) {
-                          console.log('Basket mint successfully:', result["transactionSignature"]);
+                         
+                          logger(`Basket mint successfully: ${result["transactionSignature"]}`);
                           const data = await saveBuyBasket(buyBasketData);
-                          console.log('Basket created:', data);
+                   
+                          logger('Basket created:', data);
                           navigate('/confirm', { state: { basketPayload: buyBasketData } });
                         }
 
                       } catch (err) {
-                        console.error('Error buying basket:', err.message);
+                       
+                        logger(`Error buying basket: ${err.message}`);
                         showErrorAlert('Error buying basket', err.message);
                       } finally {
                         setIsBuying(false);
