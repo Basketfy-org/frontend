@@ -116,7 +116,7 @@ const Header = ({
                     <button
                       onClick={() => {
                         disconnectWallet();
-                        setWalletConnected(false);
+                       
                         setIsDropdownOpen(false);
                       }}
                       className="w-full px-3 py-2 text-left text-sm rounded-lg hover:bg-red-600 hover:text-white transition-colors text-red-500"

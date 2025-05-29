@@ -1,6 +1,6 @@
 // hooks/useWallet.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Connection, PublicKey, LAMPORTS_PER_SOL, SYSVAR_RENT_PUBKEY, SystemProgram, Keypair } from '@solana/web3.js';
+import { Connection, PublicKey, LAMPORTS_PER_SOL, SYSVAR_RENT_PUBKEY, SystemProgram, Keypair, } from '@solana/web3.js';
 import { AnchorProvider } from '@coral-xyz/anchor';
 import idl from '../components/contract/basketfy.json';
 import * as anchor from '@coral-xyz/anchor';
@@ -518,49 +518,38 @@ export const WalletProvider = ({ children }) => {
         payer
       );
 
-      // Check if token account exists, if not create it
-      try {
-        let tokenAccount = await program.provider.connection.getTokenAccountBalance(userTokenAccount);
+      const accountInfo = await program.provider.connection.getAccountInfo(userTokenAccount);
+      if (!accountInfo) {
+        // ATA doesn't exist
         toast.error('Associated token account not found. Creating ATA...', {
           icon: '⚠️',
-          duration: 5000, // 5 seconds
+          duration: 5000,
           style: {
-            border: '1px solid #F87171', // red border
+            border: '1px solid #F87171',
             padding: '16px',
-            color: '#B91C1C', // dark red text
-            backgroundColor: '#FEF2F2', // light red background
+            color: '#B91C1C',
+            backgroundColor: '#FEF2F2',
           },
           position: 'top-right',
         });
-        logger(`User token account found: ${userTokenAccount.toString()}, Balance: ${tokenAccount.value.uiAmount}`);
-      } catch (error) {
-        if (error.message.includes("could not find account") || error.message.includes("Failed to find account")) {
 
-          toast.error('Associated token account not found. Creating ATA...', {
-            icon: '⚠️',
-            duration: 5000, // 5 seconds
-            style: {
-              border: '1px solid #F87171', // red border
-              padding: '16px',
-              color: '#B91C1C', // dark red text
-              backgroundColor: '#FEF2F2', // light red background
-            },
-            position: 'top-right',
-          });
+        const createATAIx = createAssociatedTokenAccountInstruction(
+          payer,          // payer
+          userTokenAccount, // ATA to be created
+          payer,          // owner of the ATA
+          basketMint      // mint of the token
+        );
 
-          const createATAIx = createAssociatedTokenAccountInstruction(
-            payer,
-            userTokenAccount,
-            payer,
-            basketMint
-          );
-          const tx = new anchor.web3.Transaction().add(createATAIx);
-          await program.provider.sendAndConfirm(tx, []);
+        const tx = new anchor.web3.Transaction().add(createATAIx);
+        await program.provider.sendAndConfirm(tx, []);
 
-          toast.success('Associated token account created successfully');
-          logger(`Associated token account created: ${userTokenAccount.toString()}`);
-        }
+        toast.success('Associated token account created successfully');
+        logger(`Associated token account created: ${userTokenAccount.toString()}`);
+      } else {
+        const tokenBalance = await program.provider.connection.getTokenAccountBalance(userTokenAccount);
+        logger(`User token account found: ${userTokenAccount.toString()}, Balance: ${tokenBalance.value.uiAmount}`);
       }
+
 
 
       // Find PDAs

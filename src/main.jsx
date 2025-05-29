@@ -4,7 +4,8 @@ import './index.css'
 import App from './App.jsx'
 import { WalletProvider } from './src/hook/wallet.jsx'
 import { Toaster } from 'react-hot-toast';
-
+import { Buffer } from 'buffer'
+window.Buffer = Buffer
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <WalletProvider autoConnect={true}>

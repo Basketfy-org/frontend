@@ -179,8 +179,13 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
                     if (investAmount) {
                       setIsBuying(true);
                       const newBasketTokens = basketDetails.tokens.map((item) => ({
-                        ...item,
-                        entryPrice: 0.0,
+                       
+                        entryPrice:parseFloat (item.price),
+                        isNative:item.isNative,
+                        token: item.name,
+                        tokenSymbol: item.ticker,
+                        description: "Solar energy token",
+                        weight: 0.00
                       }));
 
                       const userId = formatAddress(walletAddress);
@@ -201,8 +206,8 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
                       }
 
 
-                 
-                      logger(`${buyBasketData}, ${investAmount}`);
+
+                      logger(buyBasketData);
                       try {
                         const result = await buyBasket(
                           investAmount,
@@ -213,16 +218,16 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
 
 
                         if (result["transactionSignature"] !== null && result["success"]) {
-                         
+
                           logger(`Basket mint successfully: ${result["transactionSignature"]}`);
                           const data = await saveBuyBasket(buyBasketData);
-                   
+
                           logger('Basket created:', data);
                           navigate('/confirm', { state: { basketPayload: buyBasketData } });
                         }
 
                       } catch (err) {
-                       
+
                         logger(`Error buying basket: ${err.message}`);
                         showErrorAlert('Error buying basket', err.message);
                       } finally {

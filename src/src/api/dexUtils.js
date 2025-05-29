@@ -129,6 +129,7 @@ export async function getBatchToken() {
         throw error;
     }
 }
+
 export async function getBatchTokenPrice(contracts) {
     const timestamp = new Date().toISOString();
     const requestPath = "/api/v5/dex/market/price-info";

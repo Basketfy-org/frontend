@@ -120,41 +120,31 @@ const CreateBasketPage = ({ darkMode, setShowWalletModal }) => {
   //   }
   // }
 
-  async function getAvailableTokens() {
+ async function getAvailableTokens() {
+  try {
+    // 1. Get token metadata
+    const tokenMetadata = await getBatchToken();
+    const metadataList = tokenMetadata.data.slice(0, 50); // limit to 50 tokens
+
+    // 2. Extract contract addresses
+    const contractAddresses = metadataList.map(token => token.tokenContractAddress);
+
+    let allPriceData = [];
+    let batchFailed = false;
+
+    // 3. Attempt batch price lookup
     try {
-      // Get token metadata (names, symbols, logos, addresses)
-      const tokenMetadata = await getBatchToken();
+      const response = await getBatchTokenPrice(contractAddresses.join(','));
+      allPriceData = response.data;
+    } catch (error) {
+      console.warn("Primary batch token price fetch failed:", error);
+      batchFailed = true;
+    }
 
-      // Extract contract addresses for price lookup
-      const contractAddresses = tokenMetadata.data.map(token => token.tokenContractAddress);
+    // 4. Prepare price map
+    const priceMap = new Map();
 
-      // Step 2: Handle APIs that allow max 100 contract addresses per call
-      const chunkArray = (arr, size) => {
-        const chunks = [];
-        for (let i = 0; i < arr.length; i += size) {
-          chunks.push(arr.slice(i, i + size));
-        }
-        return chunks;
-      };
-
-      const addressChunks = chunkArray(contractAddresses, 100);
-      let allPriceData = [];
-      let failedAddresses = [];
-
-      // Try to get prices from primary API
-      for (const chunk of addressChunks) {
-        try {
-          const response = await getBatchTokenPrice(chunk.join(','));
-          allPriceData = allPriceData.concat(response.data);
-        } catch (error) {
-          console.warn(`Batch price lookup failed for chunk:`, chunk, error);
-          // Add failed addresses to retry with CoinGecko
-          failedAddresses = failedAddresses.concat(chunk);
-        }
-      }
-
-      // Create a map for quick price lookup by contract address
-      const priceMap = new Map();
+    if (!batchFailed && allPriceData.length > 0) {
       allPriceData.forEach(priceData => {
         priceMap.set(priceData.tokenContractAddress, {
           price: parseFloat(priceData.price),
@@ -163,75 +153,60 @@ const CreateBasketPage = ({ darkMode, setShowWalletModal }) => {
           marketCap: priceData.marketCap
         });
       });
+    } else {
+      // 5. Fallback to CoinGecko using token symbols
+      const symbols = metadataList.map(token => token.tokenSymbol.toLowerCase()).join(',');
 
-      // Fallback to CoinGecko for failed addresses
-      if (failedAddresses.length > 0) {
-        console.log(`Falling back to CoinGecko for ${failedAddresses.length} tokens`);
+      try {
+        const coinGeckoResponse = await getCoinGeckoTokenPrices(symbols);
 
-        try {
-          // Get symbols for failed addresses from token metadata
-          const failedTokens = tokenMetadata.data.filter(token =>
-            failedAddresses.includes(token.tokenContractAddress)
+        coinGeckoResponse.forEach(tokenData => {
+          const match = metadataList.find(token =>
+            token.tokenSymbol.toLowerCase() === tokenData.symbol.toLowerCase()
           );
 
-          const symbols = failedTokens.map(token => token.tokenSymbol.toLowerCase()).join(',');
-
-          if (symbols) {
-            const coinGeckoResponse = await getCoinGeckoTokenPrices(symbols);
-
-            // Process CoinGecko response and add to priceMap
-            coinGeckoResponse.forEach(tokenData => {
-              // Find the corresponding token by symbol to get the contract address
-              const matchingToken = failedTokens.find(token =>
-                token.tokenSymbol.toLowerCase() === tokenData.symbol.toLowerCase()
-              );
-
-              if (matchingToken) {
-                priceMap.set(matchingToken.tokenContractAddress, {
-                  price: tokenData.current_price || 0,
-                  priceChange24H: tokenData.price_change_percentage_24h || null,
-                  volume24H: tokenData.total_volume || null,
-                  marketCap: tokenData.market_cap || null
-                });
-              }
+          if (match) {
+            priceMap.set(match.tokenContractAddress, {
+              price: tokenData.current_price || 0,
+              priceChange24H: tokenData.price_change_percentage_24h || null,
+              volume24H: tokenData.total_volume || null,
+              marketCap: tokenData.market_cap || null
             });
-
-            logger(`Successfully retrieved ${coinGeckoResponse} prices from CoinGecko`);
           }
-        } catch (coinGeckoError) {
+        });
 
-          logger("CoinGecko fallback also failed:", coinGeckoError);
-          // Continue with available data, missing prices will be set to 0
-        }
+        logger(`Successfully retrieved fallback prices from CoinGecko`);
+      } catch (fallbackError) {
+        logger("CoinGecko fallback also failed:", fallbackError);
       }
-
-      // Merge the data into the desired format
-      const availableTokens = tokenMetadata.data.map(token => {
-        const priceInfo = priceMap.get(token.tokenContractAddress);
-
-        return {
-          ticker: token.tokenSymbol,
-          name: token.tokenName,
-          price: priceInfo ? priceInfo.price : 0,
-          isNative: token.tokenContractAddress === NATIVE_SOL,
-          tokenAddress: token.tokenContractAddress,
-          tokenLogoUrl: token.tokenLogoUrl,
-          // Optional: include additional price data
-          priceChange24H: priceInfo ? priceInfo.priceChange24H : null,
-          volume24H: priceInfo ? priceInfo.volume24H : null,
-          marketCap: priceInfo ? priceInfo.marketCap : null
-        };
-
-      });
-      
-      logger(`Successfully retrieved ${availableTokens.length} available tokens`);
-      return availableTokens;
-
-    } catch (error) {
-      console.error("Failed to get available tokens:", error);
-      throw error;
     }
+
+    // 6. Merge metadata with price data
+    const availableTokens = metadataList.map(token => {
+      const priceInfo = priceMap.get(token.tokenContractAddress);
+
+      return {
+        ticker: token.tokenSymbol,
+        name: token.tokenName,
+        price: priceInfo?.price || 0,
+        isNative: token.tokenContractAddress === NATIVE_SOL,
+        tokenAddress: token.tokenContractAddress,
+        tokenLogoUrl: token.tokenLogoUrl,
+        priceChange24H: priceInfo?.priceChange24H || null,
+        volume24H: priceInfo?.volume24H || null,
+        marketCap: priceInfo?.marketCap || null
+      };
+    });
+
+    logger(`Successfully retrieved ${availableTokens.length} available tokens`);
+    return availableTokens;
+
+  } catch (error) {
+    console.error("Failed to get available tokens:", error);
+    throw error;
   }
+}
+
 
   // CoinGecko API function based on your provided endpoint
   async function getCoinGeckoTokenPrices(symbols) {
