@@ -154,40 +154,40 @@ const App = () => {
   });
 
 
-useEffect(() => {
-  const fetchBaskets = async () => {
-    try {
-      setLoading(true);
-      
-      // Set a timeout to ensure loading is false after 400ms
-      const timeoutId = setTimeout(() => {
+  useEffect(() => {
+    const fetchBaskets = async () => {
+      try {
+        setLoading(true);
+
+        // Set a timeout to ensure loading is false after 400ms
+        const timeoutId = setTimeout(() => {
+          setLoading(false);
+        }, 400);
+
+        const response = await getBaskets("100");
+
+        // Clear timeout since we got a response
+        clearTimeout(timeoutId);
+
+        if (response && response.data) {
+
+          logger(`Fetched Baskets:, ${response.data}`);
+          setBaskets(response.data);
+        } else {
+
+          logger(`Failed to fetch baskets:, ${response}`);
+        }
+      } catch (error) {
+
+        logger(`Error fetching baskets:, ${error}`);
+      } finally {
+        // Ensure loading is false
         setLoading(false);
-      }, 400);
-      
-      const response = await getBaskets("100");
-      
-      // Clear timeout since we got a response
-      clearTimeout(timeoutId);
-      
-      if (response && response.data) {
-        
-        logger("Fetched Baskets:", response.data);
-        setBaskets(response.data);
-      } else {
-       
-        logger("Failed to fetch baskets:", response);
       }
-    } catch (error) {
+    };
 
-      logger("Error fetching baskets:", error);
-    } finally {
-      // Ensure loading is false
-      setLoading(false);
-    }
-  };
-
-  fetchBaskets();
-}, []);
+    fetchBaskets();
+  }, []);
   if (loading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
@@ -230,7 +230,7 @@ useEffect(() => {
               darkMode={darkMode}
               selectedBasket={selectedBasket} // Ensure this is set when navigating to detail
               setShowWalletModal={setShowWalletModal}
-           
+
             />
           } />
           <Route path="/confirm" element={

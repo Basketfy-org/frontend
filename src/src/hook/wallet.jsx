@@ -521,13 +521,32 @@ export const WalletProvider = ({ children }) => {
       // Check if token account exists, if not create it
       try {
         let tokenAccount = await program.provider.connection.getTokenAccountBalance(userTokenAccount);
-
+        toast.error('Associated token account not found. Creating ATA...', {
+          icon: '⚠️',
+          duration: 5000, // 5 seconds
+          style: {
+            border: '1px solid #F87171', // red border
+            padding: '16px',
+            color: '#B91C1C', // dark red text
+            backgroundColor: '#FEF2F2', // light red background
+          },
+          position: 'top-right',
+        });
         logger(`User token account found: ${userTokenAccount.toString()}, Balance: ${tokenAccount.value.uiAmount}`);
       } catch (error) {
         if (error.message.includes("could not find account") || error.message.includes("Failed to find account")) {
 
-          toast.info('Associated token account not found. Creating ATA...',
-          );
+          toast.error('Associated token account not found. Creating ATA...', {
+            icon: '⚠️',
+            duration: 5000, // 5 seconds
+            style: {
+              border: '1px solid #F87171', // red border
+              padding: '16px',
+              color: '#B91C1C', // dark red text
+              backgroundColor: '#FEF2F2', // light red background
+            },
+            position: 'top-right',
+          });
 
           const createATAIx = createAssociatedTokenAccountInstruction(
             payer,

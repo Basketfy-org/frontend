@@ -13,13 +13,13 @@ import Header from '../components/header';
 import { useNavigate } from 'react-router-dom';
 
 const ExplorePage = ({ darkMode,
-    setCurrentView,
+    
     setShowWalletModal,
     setWalletConnected,
     walletConnected,
     setSearchTerm,
     searchTerm,
-    setSelectedBasket,
+    
     selectedCategory,
     setSelectedCategory,
     filteredBaskets,
