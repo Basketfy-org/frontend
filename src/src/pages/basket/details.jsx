@@ -12,46 +12,44 @@ import {
 } from 'lucide-react';
 import { saveBuyBasket } from '../../api/basketApi';
 import { useWallet } from '../../hook/wallet';
+import { useLocation, useNavigate } from 'react-router-dom';
+import Header from '../../components/header';
 
-const BasketDetailPage = ({ darkMode, setCurrentView, selectedBasket, setShowWalletModal, walletConnected, setInvestAmount, investAmount }) => {
+const BasketDetailPage = ({ darkMode, setShowWalletModal, walletConnected, setWalletConnected }) => {
+
+  const location = useLocation(); // Hook to access location object
+  const navigate = useNavigate(); // For navigating back or to explore
+  const [basketDetails, setBasketDetails] = useState(null); // State to hold the received basket payload
+  const [investAmount, setInvestAmount] = useState('');
+  useEffect(() => {
+    // Check if location.state exists and contains basketDetails
+    if (location.state && location.state.basketDetails) {
+      setBasketDetails(location.state.basketDetails);
+    } else {
+      // If no data is passed, redirect to a safe page (e.g., explore)
+      console.warn("No basket details found in navigation state. Redirecting to explore.");
+      navigate('/explore');
+    }
+  }, [location.state, navigate]); // Depend on location.state and navigate
+
   const [isBuying, setIsBuying] = useState(false);
   const estimatedTokens = investAmount ? (parseFloat(investAmount) * 0.95).toFixed(2) : '0';
   const { getBalance, formatAddress, walletAddress, buyBasket } = useWallet();
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-      {/* Header */}
-      <header className={`${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <button
-            onClick={() => setCurrentView('explore')}
-            className="flex items-center gap-2 hover:text-purple-400 transition-colors mb-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Explorer
-          </button>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="text-4xl">{selectedBasket?.image}</div>
-              <div>
-                <h1 className="text-3xl font-bold">{selectedBasket?.name}</h1>
-                <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Created by {selectedBasket?.creator}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <button className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <Share2 className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setShowWalletModal(true)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg ${walletConnected ? 'bg-green-600' : 'bg-purple-600'} text-white hover:opacity-90 transition-opacity`}
-              >
-                <Wallet className="w-4 h-4" />
-                {walletConnected ? 'Connected' : 'Connect Wallet'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+
+      {/* Header Component */}
+      <Header
+        darkMode={darkMode}
+        setWalletConnected={setWalletConnected}
+        setShowWalletModal={setShowWalletModal}
+        route={'/explore'}
+        routeText='Back to Explorer'
+        walletConnected={walletConnected}
+        title="Basket Details"
+        basketDetails={basketDetails}
+      />
+
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -64,24 +62,24 @@ const BasketDetailPage = ({ darkMode, setCurrentView, selectedBasket, setShowWal
                 <div>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1`}>7 Day</p>
                   <div className="flex items-center gap-2">
-                    {selectedBasket?.performance7d > 0 ?
+                    {basketDetails?.performance7d > 0 ?
                       <TrendingUp className="w-5 h-5 text-green-400" /> :
                       <TrendingDown className="w-5 h-5 text-red-400" />
                     }
-                    <span className={`text-2xl font-bold ${selectedBasket?.performance7d > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {selectedBasket?.performance7d > 0 ? '+' : ''}{selectedBasket?.performance7d}%
+                    <span className={`text-2xl font-bold ${basketDetails?.performance7d > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {basketDetails?.performance7d > 0 ? '+' : ''}{basketDetails?.performance7d}%
                     </span>
                   </div>
                 </div>
                 <div>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1`}>30 Day</p>
                   <div className="flex items-center gap-2">
-                    {selectedBasket?.performance30d > 0 ?
+                    {basketDetails?.performance30d > 0 ?
                       <TrendingUp className="w-5 h-5 text-green-400" /> :
                       <TrendingDown className="w-5 h-5 text-red-400" />
                     }
-                    <span className={`text-2xl font-bold ${selectedBasket?.performance30d > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {selectedBasket?.performance30d > 0 ? '+' : ''}{selectedBasket?.performance30d}%
+                    <span className={`text-2xl font-bold ${basketDetails?.performance30d > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {basketDetails?.performance30d > 0 ? '+' : ''}{basketDetails?.performance30d}%
                     </span>
                   </div>
                 </div>
@@ -92,7 +90,7 @@ const BasketDetailPage = ({ darkMode, setCurrentView, selectedBasket, setShowWal
             <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
               <h2 className="text-xl font-semibold mb-6">Token Composition</h2>
               <div className="space-y-4">
-                {selectedBasket?.tokens.map((token, index) => (
+                {basketDetails?.tokens.map((token, index) => (
                   <div key={token.ticker} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
@@ -166,7 +164,7 @@ const BasketDetailPage = ({ darkMode, setCurrentView, selectedBasket, setShowWal
                       setShowWalletModal(true);
                     } else if (investAmount) {
                       setIsBuying(true);
-                      const newBasketTokens = selectedBasket.tokens.map((item) => ({
+                      const newBasketTokens = basketDetails.tokens.map((item) => ({
                         ...item,
                         entryPrice: 0.0,
                       }));
@@ -177,37 +175,37 @@ const BasketDetailPage = ({ darkMode, setCurrentView, selectedBasket, setShowWal
                         "userId": userId,
                         "sessionId": sessionId,
                         "basketData": {
-                          "basketReferenceId": selectedBasket.basketReferenceId,
-                          "basketName": selectedBasket.name,
-                          "description": selectedBasket.description,
-                          "image": selectedBasket.image,
-                          "createdBy": selectedBasket.creator,
+                          "basketReferenceId": basketDetails.basketReferenceId,
+                          "basketName": basketDetails.name,
+                          "description": basketDetails.description,
+                          "image": basketDetails.image,
+                          "createdBy": basketDetails.creator,
                           "totalWeight": 100,
                           "items": newBasketTokens,
                         },
-                        "category": selectedBasket.category,
+                        "category": basketDetails.category,
                       }
 
 
-                      console.log(buyBasketData);
+                      console.log(buyBasketData, investAmount);
                       try {
                         const result = await buyBasket(
                           investAmount,
-                          selectedBasket.address,
-                          selectedBasket.basketReferenceId,
+                          basketDetails.address,
+                          basketDetails.basketReferenceId,
                         )
 
                         console.log('Basket created successfully:', result["transactionSignature"]);
 
                         if (result["transactionSignature"] !== null && result["success"]) {
-                          //const data = await buyBasket(buyBasketData);
+                          const data = await saveBuyBasket(buyBasketData);
                           console.log('Basket created:', data);
-                          setCurrentView('confirm');
+                          navigate('/confirm', { state: { basketPayload: buyBasketData } });
                         }
 
                       } catch (err) {
-                        console.error('Error creating basket:', err.message);
-                        alert('Failed to create basket. Please try again.');
+                        console.error('Error buying basket:', err.message);
+                        showErrorAlert('Error buying basket', err.message);
                       } finally {
                         setIsBuying(false);
                       }
@@ -230,7 +228,7 @@ const BasketDetailPage = ({ darkMode, setCurrentView, selectedBasket, setShowWal
               <div className="mt-6 pt-6 border-t border-gray-700">
                 <div className="flex items-center justify-between text-sm">
                   <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Total Holders</span>
-                  <span className="font-medium">{selectedBasket?.holders}</span>
+                  <span className="font-medium">{basketDetails?.holders}</span>
                 </div>
               </div>
             </div>

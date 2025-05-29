@@ -4,9 +4,11 @@ import {
     ArrowLeft,
 
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 
-export const PortfolioPage = ({ darkMode, setCurrentView, investAmount, selectedBasket }) => {
+export const PortfolioPage = ({ darkMode, investAmount, selectedBasket }) => {
+        const navigate = useNavigate(); // Initialize useNavigate hook
     return (<div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${darkMode ? 'text-white' : 'text-gray-900'}`}>
         {/* Header */}
         <header className={`${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
@@ -14,7 +16,7 @@ export const PortfolioPage = ({ darkMode, setCurrentView, investAmount, selected
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <button
-                            onClick={() => setCurrentView('landing')}
+                                   onClick={() =>  navigate(`/`)}
                             className="flex items-center gap-2 hover:text-purple-400 transition-colors"
                         >
                             <ArrowLeft className="w-5 h-5" />
@@ -24,7 +26,7 @@ export const PortfolioPage = ({ darkMode, setCurrentView, investAmount, selected
                     </div>
                     <div className="flex items-center gap-4">
                         <button
-                            onClick={() => setCurrentView('explore')}
+                                   onClick={() =>  navigate(`explore`)}
                             className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
                         >
                             Explore More

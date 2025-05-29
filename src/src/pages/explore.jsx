@@ -10,11 +10,12 @@ import {
 
 } from 'lucide-react';
 import Header from '../components/header';
+import { useNavigate } from 'react-router-dom';
 
 const ExplorePage = ({ darkMode,
     setCurrentView,
     setShowWalletModal,
-      setWalletConnected,
+    setWalletConnected,
     walletConnected,
     setSearchTerm,
     searchTerm,
@@ -23,14 +24,14 @@ const ExplorePage = ({ darkMode,
     setSelectedCategory,
     filteredBaskets,
 }) => {
-
+    const navigate = useNavigate(); // Initialize useNavigate hook
     return (<div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${darkMode ? 'text-white' : 'text-gray-900'}`}>
         {/* Header Component */}
         <Header
             darkMode={darkMode}
-              setWalletConnected={setWalletConnected}
+            setWalletConnected={setWalletConnected}
             setShowWalletModal={setShowWalletModal}
-            setCurrentView={setCurrentView}
+            route={'/'}
             walletConnected={walletConnected}
             title="Basket Explorer"
         />
@@ -67,8 +68,7 @@ const ExplorePage = ({ darkMode,
                         key={basket.id}
                         className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
                         onClick={() => {
-                            setSelectedBasket(basket);
-                            setCurrentView('detail');
+                            navigate(`/basket/${basket.name}`, { state: { basketDetails: basket } });
                         }}
                     >
                         <div className="flex items-start justify-between mb-4">

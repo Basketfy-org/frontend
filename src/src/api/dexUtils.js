@@ -19,8 +19,8 @@ const COMPUTE_UNITS = 300000;
 const MAX_RETRIES = 3;
 
 // Environment variables
-const apiKey = import.meta.env.VITE_OKX_API_KEY ;
-const secretKey =import.meta.env.VITE_OKX_API_SECRET;
+const apiKey = import.meta.env.VITE_OKX_API_KEY;
+const secretKey = import.meta.env.VITE_OKX_API_SECRET;
 const apiPassphrase = import.meta.env.VITE_OKX_API_PASSPHRASE;
 const projectId = import.meta.env.VITE_OKX_API_PROJECT_ID;
 export const userPrivateKey = import.meta.env.VITE_OKX_SOLANA_PRIVATE_KEY;
@@ -28,12 +28,12 @@ export const userAddress = import.meta.env.VITE_OKX_SOLANA_ADDRESS;
 export const userEthAddress = import.meta.env.VITE_OKX_ETH_ADDRESS;
 
 // Base headers function with validation
-function getHeaders(timestamp, method, requestPath, queryString = "") {
+function getHeaders(timestamp, method, requestPath, queryString = "", body = "") {
     if (!apiKey || !secretKey || !apiPassphrase || !projectId) {
         throw new Error("Missing required environment variables");
     }
 
-    const stringToSign = timestamp + method + requestPath + queryString;
+    const stringToSign = timestamp + method + requestPath + queryString + (body ? JSON.stringify(body) : "");
     return {
         "Content-Type": "application/json",
         "OK-ACCESS-KEY": apiKey,
@@ -97,7 +97,7 @@ export async function getQuote(quoteParams) {
 
 
 export async function getBatchToken() {
-   
+
 
     const timestamp = new Date().toISOString();
     const params = {
@@ -122,7 +122,7 @@ export async function getBatchToken() {
         if (!data.data || data.data.length === 0) {
             throw new Error("No quote data received");
         }
-console.log("Batch token quote data:", data);
+        console.log("Batch token quote data:", data);
         return data;
     } catch (error) {
         console.error("Quote request failed:", error);
@@ -130,23 +130,21 @@ console.log("Batch token quote data:", data);
     }
 }
 export async function getBatchTokenPrice(contracts) {
-   
-
     const timestamp = new Date().toISOString();
-    const params = {
-        chainIndex: SOLANA_CHAIN_ID,
-        tokenContractAddress:NATIVE_SOL
-    };
-
     const requestPath = "/api/v5/dex/market/price-info";
-    const queryString = new URLSearchParams(params).toString();
-    const headers = getHeaders(timestamp, "GET", requestPath, "?" + queryString);
+    const method = "POST";
+
+    contracts = [{ chainIndex: "66", tokenContractAddress: "0x382bb369d343125bfb2117af9c149795c6c65c50" }]
+    const requestBody = JSON.stringify(contracts);
+
+    const headers = getHeaders(timestamp, method, requestPath, requestBody);
 
     try {
-        const response = await fetch(
-            `https://www.okx.com${requestPath}?${queryString}`,
-            { method: "POST", headers }
-        );
+        const response = await fetch(`https://www.okx.com${requestPath}`, {
+            method,
+            headers,
+            body: requestBody,
+        });
 
         if (!response.ok) {
             throw new Error(`Failed to get quote: ${await response.text()}`);
@@ -156,7 +154,8 @@ export async function getBatchTokenPrice(contracts) {
         if (!data.data || data.data.length === 0) {
             throw new Error("No quote data received");
         }
-console.log("Batch token quote data:", data);
+
+        console.log("Batch token quote data price:", data);
         return data;
     } catch (error) {
         console.error("Quote request failed:", error);

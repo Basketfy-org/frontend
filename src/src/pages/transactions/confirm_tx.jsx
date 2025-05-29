@@ -28,11 +28,10 @@ import {
     Check,       // Used in ConfirmTransaction and SuccessPage  
     Loader2      // Used in ConfirmTransaction and CreateBasketPage
 } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const ConfirmTransaction = ({
-    darkMode, transactionStep,
-    setTransactionStep, selectedBasket,
-    setCurrentView, investAmount,
+    darkMode, 
 }) => {
     const steps = [
         'Swapping on OKX',
@@ -40,7 +39,22 @@ const ConfirmTransaction = ({
         'Minting Basket NFT',
         'Depositing tokens into PDA'
     ];
-
+  const [transactionStep, setTransactionStep] = useState(0);
+   const location = useLocation(); // Hook to access location object
+      const navigate = useNavigate(); // For navigating back or to explore
+      const [selectedBasket, setBasketDetails] = useState(null); // State to hold the received basket payload
+  
+      useEffect(() => {
+          // Check if location.state exists and contains basketPayload
+          if (location.state && location.state.basketPayload) {
+              setBasketDetails(location.state.basketPayload);
+          } else {
+              // If no data is passed, redirect to a safe page (e.g., explore)
+              console.warn("No basket payload found in navigation state. Redirecting to explore.");
+              navigate('/explore');
+          }
+      }, [location.state, navigate]); // Depend on location.state and navigate
+  
     useEffect(() => {
         if (transactionStep < steps.length) {
             const timer = setTimeout(() => {
@@ -49,7 +63,7 @@ const ConfirmTransaction = ({
             return () => clearTimeout(timer);
         } else {
             setTimeout(() => {
-                setCurrentView('success');
+                 navigate('/buy-success', { state: { basketPayload: selectedBasket} });
             }, 1000);
         }
     }, [transactionStep]);
@@ -61,18 +75,18 @@ const ConfirmTransaction = ({
 
                 <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} mb-6`}>
                     <div className="text-center mb-4">
-                        <div className="text-3xl mb-2">{selectedBasket?.image}</div>
-                        <h3 className="text-lg font-semibold">{selectedBasket?.name}</h3>
+                        <div className="text-3xl mb-2">{selectedBasket.basketData.image}</div>
+                        <h3 className="text-lg font-semibold">{selectedBasket.basketData.name}</h3>
                     </div>
 
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                             <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Investment Amount:</span>
-                            <span className="font-medium">${investAmount} USDC</span>
+                            <span className="font-medium">${selectedBasket.basketData.investAmount} USDC</span>
                         </div>
                         <div className="flex justify-between">
                             <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>bTokens to receive:</span>
-                            <span className="font-medium">{(parseFloat(investAmount || '0') * 0.95).toFixed(2)}</span>
+                            <span className="font-medium">{(parseFloat(selectedBasket.basketData.investAmount || '0') * 0.95).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Basket NFT:</span>

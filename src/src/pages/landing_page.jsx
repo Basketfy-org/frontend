@@ -15,18 +15,19 @@ import {
 
 } from 'lucide-react';
 
-
+import { useNavigate } from 'react-router-dom';
 
 
 
 
 export const LandingPage = ({
-    darkMode, setDarkMode,
-    setCurrentView, setSelectedBasket,
-    mockBaskets, stats,
+    darkMode, 
+    setDarkMode,
+    mockBaskets, 
+    stats,
     features }) => {
- 
 
+    const navigate = useNavigate(); // Initialize useNavigate hook
 
     return (<div className={`max-w-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-black' : 'bg-gradient-to-br from-white via-purple-50 to-gray-100'} ${darkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
         {/* Header */}
@@ -42,7 +43,7 @@ export const LandingPage = ({
                     {darkMode ? '☀️' : '🌙'}
                 </button>
                 <button
-                    onClick={() => setCurrentView('create')}
+                    onClick={() =>  navigate(`create`)}
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105"
                 >
                     Create Basket
@@ -64,7 +65,7 @@ export const LandingPage = ({
                     <button
                         onClick={async () => {
 
-                            setCurrentView('explore')
+                            navigate(`explore`);
                         }}
                         className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl"
                     >
@@ -195,8 +196,9 @@ export const LandingPage = ({
                             key={basket.id}
                             className={`${darkMode ? 'bg-gray-800/50 hover:bg-gray-800/70' : 'bg-white/70 hover:bg-white/90'} backdrop-blur-sm p-8 rounded-2xl hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl cursor-pointer border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
                             onClick={() => {
-                                setSelectedBasket(basket);
-                                setCurrentView('detail');
+
+
+                                navigate(`/basket/${basket.name}`, { state: { basketDetails: basket } });
                             }}
                         >
                             <div className="text-4xl mb-4">{basket.image}</div>

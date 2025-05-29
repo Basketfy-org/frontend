@@ -438,7 +438,7 @@ export const WalletProvider = ({ children }) => {
   };
 
 
-  const buyBasket = async (amount, basketMint,basketId) => {
+  const buyBasket = async (amount, basketMint, basketId) => {
     if (!wallet || !connected || !program || !anchorProvider) {
       throw new Error('Wallet not connected or program not initialized');
     }
@@ -447,26 +447,30 @@ export const WalletProvider = ({ children }) => {
       const payer = new PublicKey(walletAddress);
       basketMint = new PublicKey(basketMint);
 
-         // Get the token account of the sender
-        const userTokenAccount = await getAssociatedTokenAddress(
-            basketMint,
-            payer
-        );
+      // Get the token account of the sender
+      const userTokenAccount = await getAssociatedTokenAddress(
+        basketMint,
+        payer
+      );
 
-        // Check if token account exists, if not create it
-        try {
-            await program.provider.connection.getTokenAccountBalance(userTokenAccount);
-        } catch (error) {
-            console.log("Creating associated token account for sender...");
-            const createATAIx = createAssociatedTokenAccountInstruction(
-               payer,
-                userTokenAccount,
-                payer,
-                basketMint
-            );
-            const tx = new anchor.web3.Transaction().add(createATAIx);
-            await program.provider.sendAndConfirm(tx,[]);
+      // Check if token account exists, if not create it
+      try {
+        let tokenAccount = await program.provider.connection.getTokenAccountBalance(userTokenAccount);
+        console.log("User token account already exists:", userTokenAccount.toString(), "Balance:", tokenAccount.value.uiAmount);
+      } catch (error) {
+        if (error.message.includes("could not find account") || error.message.includes("Failed to find account")) {
+          console.log("Associated token account not found. Creating ATA...");
+
+          const createATAIx = createAssociatedTokenAccountInstruction(
+            payer,
+            userTokenAccount,
+            payer,
+            basketMint
+          );
+          const tx = new anchor.web3.Transaction().add(createATAIx);
+          await program.provider.sendAndConfirm(tx, []);
         }
+      }
 
 
       // Find PDAs
@@ -474,7 +478,7 @@ export const WalletProvider = ({ children }) => {
       const [configPDA] = findConfigPDA(factoryPDA, new anchor.BN(basketId));
       const [mintAuthorityPDA] = findMintAuthorityPDA(configPDA);
 
-console.log('Found PDAs:' )
+
       console.log('Creating basket mint with:', {
         userTokenAccount: userTokenAccount.toString(),
         factoryPDA: factoryPDA.toString(),
@@ -486,7 +490,7 @@ console.log('Found PDAs:' )
       // Create the transaction
       const tx = await program.methods
         .mintBasketToken(
-         new anchor.BN(amount * LAMPORTS_PER_SOL) // Convert amount to lamports
+          new anchor.BN(amount * LAMPORTS_PER_SOL) // Convert amount to lamports
         )
         .accounts({
           config: configPDA,
@@ -495,16 +499,16 @@ console.log('Found PDAs:' )
           recipientTokenAccount: userTokenAccount,
           tokenProgram: TOKEN_PROGRAM_ID,
         })
-       
+
         .rpc();
 
-      console.log("Basket mint created successfully:", tx);
+      console.log("Basket token mint created successfully:", tx);
 
       return {
         success: true,
         transactionSignature: tx,
         configPDA: configPDA.toString(),
-        mintAddress: basketMint.publicKey.toString(),
+        mintAddress: basketMint.toString(),
         message: `Successfully bought ${amount} of the basket`
       };
 

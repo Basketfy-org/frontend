@@ -9,9 +9,13 @@ import { saveBasket } from '../../api/basketApi';
 import { useWallet } from '../../hook/wallet';
 import Header from '../../components/header';
 import { getBatchToken, getBatchTokenPrice, NATIVE_SOL, SOLANA_CHAIN_ID } from '../../api/dexUtils';
+import { useNavigate } from 'react-router-dom';
+import { showErrorAlert } from '../../components/alert';
 
 
-const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, walletConnected, setShowWalletModal }) => {
+const CreateBasketPage = ({ darkMode, setWalletConnected, walletConnected, setShowWalletModal }) => {
+  const navigate = useNavigate(); // Initialize useNavigate hook
+
   const [basketName, setBasketName] = useState('');
   const [basketUri, setBasketUri] = useState('');
   const [basketSymbol, setBasketSymbol] = useState('');
@@ -41,78 +45,78 @@ const CreateBasketPage = ({ darkMode, setCurrentView, setWalletConnected, wallet
   ];
 
   const totalWeight = Object.values(tokenWeights).reduce((sum, weight) => sum + (parseFloat(weight) || 0), 0);
-useEffect(() => {
-  // Fetch available tokens when the component mounts
-  getAvailableTokens().then(tokens => {
-    setTokens(tokens);
-  }).catch(error => {
-    console.error("Error fetching available tokens:", error);
-  });
-}, []);
+  useEffect(() => {
+    // Fetch available tokens when the component mounts
+    getAvailableTokens().then(tokens => {
+      setTokens(tokens);
+    }).catch(error => {
+      console.error("Error fetching available tokens:", error);
+    });
+  }, []);
 
-async function getAvailableTokens() {
+  async function getAvailableTokens() {
     try {
-        // Get token metadata (names, symbols, logos, addresses)
-        const tokenMetadata = await getBatchToken();
-        
-        // Extract contract addresses for price lookup
-        const contractAddresses = tokenMetadata.data.map(token => token.tokenContractAddress);
-        
+      // Get token metadata (names, symbols, logos, addresses)
+      const tokenMetadata = await getBatchToken();
 
-        // Step 2: Handle APIs that allow max 100 contract addresses per call
-        const chunkArray = (arr, size) => {
-            const chunks = [];
-            for (let i = 0; i < arr.length; i += size) {
-                chunks.push(arr.slice(i, i + size));
-            }
-            return chunks;
-        };
+      // Extract contract addresses for price lookup
+      const contractAddresses = tokenMetadata.data.map(token => token.tokenContractAddress);
 
-        const addressChunks = chunkArray(contractAddresses, 100);
-        let allPriceData = [];
 
-        for (const chunk of addressChunks) {
-            const response = await getBatchTokenPrice(chunk.join(','));
-            allPriceData = allPriceData.concat(response.data);
+      // Step 2: Handle APIs that allow max 100 contract addresses per call
+      const chunkArray = (arr, size) => {
+        const chunks = [];
+        for (let i = 0; i < arr.length; i += size) {
+          chunks.push(arr.slice(i, i + size));
         }
-        // Create a map for quick price lookup by contract address
-        const priceMap = new Map();
-        allPriceData.forEach(priceData => {
-            priceMap.set(priceData.tokenContractAddress, {
-                price: parseFloat(priceData.price),
-                priceChange24H: priceData.priceChange24H,
-                volume24H: priceData.volume24H,
-                marketCap: priceData.marketCap
-            });
+        return chunks;
+      };
+
+      const addressChunks = chunkArray(contractAddresses, 100);
+      let allPriceData = [];
+
+      for (const chunk of addressChunks) {
+        const response = await getBatchTokenPrice(chunk.join(','));
+        allPriceData = allPriceData.concat(response.data);
+      }
+      // Create a map for quick price lookup by contract address
+      const priceMap = new Map();
+      allPriceData.forEach(priceData => {
+        priceMap.set(priceData.tokenContractAddress, {
+          price: parseFloat(priceData.price),
+          priceChange24H: priceData.priceChange24H,
+          volume24H: priceData.volume24H,
+          marketCap: priceData.marketCap
         });
-        
-        // Merge the data into the desired format
-        const availableTokens = tokenMetadata.data.map(token => {
-            const priceInfo = priceMap.get(token.tokenContractAddress);
-            
-            return {
-                ticker: token.tokenSymbol,
-                name: token.tokenName,
-                price: priceInfo ? priceInfo.price : 0,
-                isNative: token.tokenContractAddress === NATIVE_SOL,
-                tokenAddress: token.tokenContractAddress,
-                tokenLogoUrl: token.tokenLogoUrl,
-                // Optional: include additional price data
-                priceChange24H: priceInfo ? priceInfo.priceChange24H : null,
-                volume24H: priceInfo ? priceInfo.volume24H : null,
-                marketCap: priceInfo ? priceInfo.marketCap : null
-            };
-        });
-        
-        console.log("Merged available tokens:", availableTokens);
-        return availableTokens;
-        
+      });
+
+      // Merge the data into the desired format
+      const availableTokens = tokenMetadata.data.map(token => {
+        const priceInfo = priceMap.get(token.tokenContractAddress);
+
+        return {
+          ticker: token.tokenSymbol,
+          name: token.tokenName,
+          price: priceInfo ? priceInfo.price : 0,
+          isNative: token.tokenContractAddress === NATIVE_SOL,
+          tokenAddress: token.tokenContractAddress,
+          tokenLogoUrl: token.tokenLogoUrl,
+          // Optional: include additional price data
+          priceChange24H: priceInfo ? priceInfo.priceChange24H : null,
+          volume24H: priceInfo ? priceInfo.volume24H : null,
+          marketCap: priceInfo ? priceInfo.marketCap : null
+        };
+      });
+
+      console.log("Merged available tokens:", availableTokens);
+      return availableTokens;
+
     } catch (error) {
       setTokens(availableTokens);
-        console.error("Failed to get available tokens:", error);
-        throw error;
+      console.error("Failed to get available tokens:", error);
+      throw error;
     }
-}
+  }
 
 
   return (
@@ -120,10 +124,10 @@ async function getAvailableTokens() {
       {/* Header Component */}
       <Header
         darkMode={darkMode}
-        setCurrentView={setCurrentView}
+
         setWalletConnected={setWalletConnected}
         setShowWalletModal={setShowWalletModal}
-
+        route={`/`}
         walletConnected={walletConnected}
         title="Create Basket"
       />
@@ -338,12 +342,16 @@ async function getAvailableTokens() {
                     if (result["transactionSignature"] !== null) {
                       const data = await saveBasket(basketPayload);
                       console.log('Basket created:', data);
-                      setCurrentView('landing');
+                      // Use navigate to go to the success page, passing the basketPayload as state
+                      navigate('/create-success', { state: { basketPayload: basketPayload } });
                     }
 
                   } catch (err) {
+                    // Handle error during basket creation
+                    //show alerter component error
+                    showErrorAlert('Error creating basket', err.message);
                     console.error('Error creating basket:', err.message);
-                    alert('Failed to create basket. Please try again.');
+                   
                   } finally {
                     setIsCreating(false);
                   }

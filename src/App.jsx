@@ -38,7 +38,8 @@ import PortfolioPage from './src/pages/portfolio';
 import CreateBasketPage from './src/pages/basket/create';
 import SuccessPage from './src/pages/success';
 import { getBaskets } from './src/api/basketApi';
-
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import CreateSuccessPage from './src/pages/basket/create_success';
 
 
 
@@ -131,31 +132,31 @@ const stats = [
 
 const App = () => {
 
-  const [currentView, setCurrentView] = useState('landing');
+
   const [baskets, setBaskets] = useState([]);
   const [selectedBasket, setSelectedBasket] = useState(null);
   const [walletConnected, setWalletConnected] = useState(false);
-  const [investAmount, setInvestAmount] = useState('');
+
   const [showWalletModal, setShowWalletModal] = useState(false);
-  const [transactionStep, setTransactionStep] = useState(0);
+
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [darkMode, setDarkMode] = useState(true);
-   const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
 
- const filteredBaskets = baskets.filter(basket => {
+  const filteredBaskets = baskets.filter(basket => {
     const matchesSearch = basket.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       basket.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || basket.category.toLowerCase() === selectedCategory.toLowerCase();
     return matchesSearch && matchesCategory;
   });
 
- 
- useEffect(() => {
+
+  useEffect(() => {
     const fetchBaskets = async () => {
- 
+
       try {
         setLoading(true);
         const response = await getBaskets("100");
@@ -182,75 +183,88 @@ const App = () => {
     );
   }
 
-  // Main render
+
   return (
-    <>
-      {currentView === 'landing' && (
-        <LandingPage
+    <Router> {/* Wrap your entire app with Router */}
+      <>
+        <Routes> {/* Define your routes here */}
+          <Route path="/" element={
+            <LandingPage
+              darkMode={darkMode}
+              setDarkMode={setDarkMode}
+              mockBaskets={mockBaskets} // Consider using `baskets` state after fetching
+              stats={stats}
+              features={features}
+            />
+          } />
+          <Route path="/explore" element={
+            <ExplorePage
+              darkMode={darkMode}
+              setWalletConnected={setWalletConnected}
+              setShowWalletModal={setShowWalletModal}
+              // setCurrentView removed
+              showWalletModal={showWalletModal}
+              walletConnected={walletConnected}
+              setSearchTerm={setSearchTerm}
+              searchTerm={searchTerm}
+              setSelectedCategory={setSelectedCategory}
+              setSelectedBasket={setSelectedBasket}
+              selectedCategory={selectedCategory}
+              filteredBaskets={filteredBaskets}
+              loading={loading} // Pass loading state
+            />
+          } />
+          {/* Use URL parameters for detail pages, e.g., /baskets/:id or /baskets/:symbol */}
+          <Route path="/basket/:id" element={
+            <BasketDetailPage
+              darkMode={darkMode}
+              selectedBasket={selectedBasket} // Ensure this is set when navigating to detail
+              setShowWalletModal={setShowWalletModal}
+              walletConnected={walletConnected}
+              setWalletConnected={setWalletConnected}
+            />
+          } />
+          <Route path="/confirm" element={
+            <ConfirmTransaction
+              darkMode={darkMode}
+            />
+          } />
+          <Route path="/buy-success" element={
+            <SuccessPage
+              darkMode={darkMode}
+            />
+          } />
+          {/* Route for CreateBasketPage */}
+          <Route path="/create" element={
+            <CreateBasketPage
+              darkMode={darkMode}
+              setWalletConnected={setWalletConnected}
+              walletConnected={walletConnected}
+              setShowWalletModal={setShowWalletModal}
+            />
+          } />
+          {/* Route for CreateSuccessPage, will receive state via navigate */}
+          <Route path="/create-success" element={
+            <CreateSuccessPage
+              darkMode={darkMode}
+            />
+          } />
+          <Route path="/portfolio" element={
+            <PortfolioPage
+              darkMode={darkMode}
+            />
+          } />
+        </Routes>
+
+        {/* WalletModal should remain outside of Routes if it's a global modal */}
+        <WalletModal
+          showWalletModal={showWalletModal}
           darkMode={darkMode}
-          setDarkMode={setDarkMode}
-          setCurrentView={setCurrentView}
-          setSelectedBasket={setSelectedBasket}
-          mockBaskets={mockBaskets}
-          stats={stats}
-          features={features}
+          setWalletConnected={setWalletConnected}
+          setShowWalletModal={setShowWalletModal}
         />
-      )}
-      {currentView === 'explore' && <ExplorePage
-        darkMode={darkMode}
-        setWalletConnected={setWalletConnected}
-        setShowWalletModal={setShowWalletModal}
-        setCurrentView={setCurrentView}
-        showWalletModal={showWalletModal}
-        walletConnected={walletConnected}
-        setSearchTerm={setSearchTerm}
-        searchTerm={searchTerm}
-        setSelectedCategory={setSelectedCategory}
-        setSelectedBasket={setSelectedBasket}
-        selectedCategory={selectedCategory}
-        filteredBaskets={filteredBaskets}
-      />}
-      {currentView === 'detail' && <BasketDetailPage
-        darkMode={darkMode}
-        setCurrentView={setCurrentView}
-        selectedBasket={selectedBasket}
-        setShowWalletModal={setShowWalletModal}
-        walletConnected={walletConnected}
-        setInvestAmount={setInvestAmount}
-        investAmount={investAmount}
-      />}
-      {currentView === 'confirm' && <ConfirmTransaction
-        darkMode={darkMode}
-        transactionStep={transactionStep}
-        setTransactionStep={setTransactionStep}
-        setSelectedBasket={setSelectedBasket}
-        setCurrentView={setCurrentView}
-        investAmount={investAmount} />}
-      {currentView === 'success' && <SuccessPage
-        darkMode={darkMode}
-        setCurrentView={setCurrentView}
-        setSelectedBasket={setSelectedBasket}
-        investAmount={investAmount} />}
-      {currentView === 'portfolio' && <PortfolioPage
-        darkMode={darkMode}
-        setCurrentView={setCurrentView}
-        investAmount={investAmount}
-        selectedBasket={selectedBasket}
-      />}
-      {currentView === 'create' && <CreateBasketPage
-        darkMode={darkMode}
-        setCurrentView={setCurrentView}
-        setWalletConnected={setWalletConnected}
-        walletConnected={walletConnected}
-        setShowWalletModal={setShowWalletModal}
-      />}
-      {<WalletModal
-        showWalletModal={showWalletModal}
-        darkMode={darkMode}
-        setWalletConnected={setWalletConnected}
-        setShowWalletModal={setShowWalletModal}
-      />}
-    </>
+      </>
+    </Router>
   );
 };
 
