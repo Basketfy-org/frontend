@@ -15,13 +15,23 @@ import { useWallet } from '../../hook/wallet';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/header';
 import { showErrorAlert } from '../../components/alert';
+import toast from 'react-hot-toast';
 
-const BasketDetailPage = ({ darkMode, setShowWalletModal, walletConnected, setWalletConnected }) => {
+const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
 
   const location = useLocation(); // Hook to access location object
   const navigate = useNavigate(); // For navigating back or to explore
   const [basketDetails, setBasketDetails] = useState(null); // State to hold the received basket payload
   const [investAmount, setInvestAmount] = useState('');
+
+  const {
+    walletAddress,
+    walletConnected,
+    formatAddress,
+    getBalance,
+    buyBasket,
+  } = useWallet();
+
   useEffect(() => {
     // Check if location.state exists and contains basketDetails
     if (location.state && location.state.basketDetails) {
@@ -35,18 +45,16 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, walletConnected, setWa
 
   const [isBuying, setIsBuying] = useState(false);
   const estimatedTokens = investAmount ? (parseFloat(investAmount) * 0.95).toFixed(2) : '0';
-  const { getBalance, formatAddress, walletAddress, buyBasket } = useWallet();
+
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${darkMode ? 'text-white' : 'text-gray-900'}`}>
 
       {/* Header Component */}
       <Header
         darkMode={darkMode}
-        setWalletConnected={setWalletConnected}
         setShowWalletModal={setShowWalletModal}
         route={'/explore'}
         routeText='Back to Explorer'
-        walletConnected={walletConnected}
         title="Basket Details"
         basketDetails={basketDetails}
       />
@@ -158,12 +166,16 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, walletConnected, setWa
 
                 <button
                   onClick={async () => {
-                    if (getBalance() < 0.01) {
-                      alert('You need at least 0.01 SOL to create a basket');
+                    if (await getBalance() < 0.01) {
+                      toast.error('You need at least 0.01 SOL to create a basket',
+                        {
+                          duration: 2500,
+                        }
+                      );
+                      setIsCreating(false);
+                      return;
                     }
-                    if (!walletConnected) {
-                      setShowWalletModal(true);
-                    } else if (investAmount) {
+                    if (investAmount) {
                       setIsBuying(true);
                       const newBasketTokens = basketDetails.tokens.map((item) => ({
                         ...item,
@@ -196,10 +208,10 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, walletConnected, setWa
                           basketDetails.basketReferenceId,
                         )
 
-                     
+
 
                         if (result["transactionSignature"] !== null && result["success"]) {
-                             console.log('Basket mint successfully:', result["transactionSignature"]);
+                          console.log('Basket mint successfully:', result["transactionSignature"]);
                           const data = await saveBuyBasket(buyBasketData);
                           console.log('Basket created:', data);
                           navigate('/confirm', { state: { basketPayload: buyBasketData } });
