@@ -128,7 +128,8 @@ export const LandingPage = ({
                     >
                         Explore Baskets
                     </button>
-                    <button className={`${darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'} font-semibold flex items-center gap-2 transition-colors`}>
+                    <button 
+                        onClick={() => navigate(`/how-it-works`)} className={`${darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'} font-semibold flex items-center gap-2 transition-colors`}>
                         Learn How It Works <ArrowRight className="w-4 h-4" />
                     </button>
                 </div>

@@ -40,6 +40,7 @@ import SuccessPage from './src/pages/success';
 import { getBaskets } from './src/api/basketApi';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import CreateSuccessPage from './src/pages/basket/create_success';
+import HowItWorks from './src/components/how_it_works';
 
 
 
@@ -251,6 +252,11 @@ const App = () => {
           } />
           <Route path="/portfolio" element={
             <PortfolioPage
+              darkMode={darkMode}
+            />
+          } />
+          <Route path="/how-it-works" element={
+            <HowItWorks
               darkMode={darkMode}
             />
           } />
