@@ -39,8 +39,7 @@ export const WalletProvider = ({ children }) => {
   const initializeSolanaConnection = () => {
     try {
       // You can switch between devnet, testnet, mainnet-beta
-      const rpcUrl = 'https://api.devnet.solana.com';
-      //process.env.REACT_APP_SOLANA_RPC_URL ||;
+      const rpcUrl = import.meta.env.VITE_SOLANA_DEVNET_RPC_URL
 
       const conn = new Connection(rpcUrl, 'confirmed');
       setConnection(conn);
@@ -222,12 +221,21 @@ export const WalletProvider = ({ children }) => {
     setProgram(null);
     sessionStorage.removeItem('walletAddress');
     sessionStorage.removeItem('walletType');
+    if (wallet?.removeAllListeners) {
+      wallet.removeAllListeners('connect');
+      wallet.removeAllListeners('disconnect');
+      wallet.removeAllListeners('accountChanged');
+    }
+
   };
 
   const signTransaction = async (transaction) => {
     if (!wallet || !connected) {
       throw new Error('Wallet not connected');
     }
+if (typeof wallet.signTransaction !== 'function') {
+  throw new Error("Current wallet does not support signing transactions");
+}
 
     try {
       const signedTransaction = await wallet.signTransaction(transaction);
@@ -272,7 +280,9 @@ export const WalletProvider = ({ children }) => {
     }
 
     try {
-      const signature = await connection.sendTransaction(transaction, [wallet], options);
+      const signedTx = await wallet.signTransaction(transaction);
+      const signature = await connection.sendRawTransaction(signedTx.serialize(), options);
+
       const confirmation = await connection.confirmTransaction(signature, 'confirmed');
       console.log('Transaction sent:', signature);
       return { signature, confirmation };
@@ -577,12 +587,11 @@ export const WalletProvider = ({ children }) => {
     // State
     wallet,
     walletAddress,
-    connected,
-    connecting,
     walletType,
     connection,
     anchorProvider,
     program,
+    walletConnected: connected && wallet && anchorProvider ? true : false,
 
     // Actions
     connectWallet,

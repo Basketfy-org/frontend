@@ -11,9 +11,10 @@ import Header from '../../components/header';
 import { getBatchToken, getBatchTokenPrice, NATIVE_SOL, SOLANA_CHAIN_ID } from '../../api/dexUtils';
 import { useNavigate } from 'react-router-dom';
 import { showErrorAlert } from '../../components/alert';
+import toast from 'react-hot-toast';
 
 
-const CreateBasketPage = ({ darkMode, setWalletConnected, walletConnected, setShowWalletModal }) => {
+const CreateBasketPage = ({ darkMode, setShowWalletModal }) => {
   const navigate = useNavigate(); // Initialize useNavigate hook
 
   const [basketName, setBasketName] = useState('');
@@ -28,8 +29,7 @@ const CreateBasketPage = ({ darkMode, setWalletConnected, walletConnected, setSh
   const {
 
     walletAddress,
-    wallet,
-    setAnchorProvider,
+   walletConnected,
     formatAddress,
     getBalance,
     createBasket,
@@ -125,7 +125,7 @@ const CreateBasketPage = ({ darkMode, setWalletConnected, walletConnected, setSh
       <Header
         darkMode={darkMode}
 
-        setWalletConnected={setWalletConnected}
+       
         setShowWalletModal={setShowWalletModal}
         route={`/`}
         walletConnected={walletConnected}
@@ -287,8 +287,15 @@ const CreateBasketPage = ({ darkMode, setWalletConnected, walletConnected, setSh
 
             <button
               onClick={async () => {
-                if (getBalance() < 0.01) {
-                  alert('You need at least 0.01 SOL to create a basket');
+                if (await getBalance() < 0.01) {
+                 
+                  toast.error('You need at least 0.01 SOL to create a basket',
+                    {
+                      duration: 2500,
+                    }
+                  );
+                   setIsCreating(false);
+                   return;
                 }
                 if (basketName && basketDescription && selectedTokens.length > 0 && totalWeight === 100) {
                   setIsCreating(true);

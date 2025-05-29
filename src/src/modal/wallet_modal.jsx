@@ -9,10 +9,10 @@ import {
 
 import { useWallet } from '../hook/wallet';
 
+import toast from 'react-hot-toast';
 
 
-
-const WalletModal = ({ showWalletModal, setShowWalletModal, darkMode, setWalletConnected, }) => {
+const WalletModal = ({ showWalletModal, setShowWalletModal, darkMode}) => {
   const {
     connectWallet,
     disconnectWallet,
@@ -31,19 +31,28 @@ const WalletModal = ({ showWalletModal, setShowWalletModal, darkMode, setWalletC
     { name: 'Coinbase Wallet', icon: '🔵', adapter: 'coinbase' }
   ];
 
-  const handleConnect = async (walletType) => {
-    setError('');
-    const result = await connectWallet(walletType);
 
-    if (result.success) {
-     
-      setShowWalletModal(false);
-      setWalletConnected(true);
-    } else {
-      setError(result.error);
-      setWalletConnected(false);
+
+const handleConnect = async (walletType) => {
+  setError('');
+
+  const result = await toast.promise(
+    connectWallet(walletType),
+    {
+      loading: 'Connecting wallet...',
+      success: 'Wallet connected!',
+      error: 'Failed to connect wallet.',
     }
-  };
+  );
+
+  if (result.success) {
+    setShowWalletModal(false);
+  } else {
+    setError(result.error);
+    // Optional: show the specific error too
+    toast.error(result.error);
+  }
+};
 
   const handleDisconnect = async () => {
     await disconnectWallet();

@@ -8,8 +8,7 @@ const Header = ({
   route,
   routeText = "Back to Home",
   setShowWalletModal,
-  setWalletConnected,
-  walletConnected,
+
   title = "Basket Explorer",
   basketDetails = null
 }) => {
@@ -17,7 +16,7 @@ const Header = ({
 
   const {
     disconnectWallet,
-    connected,
+    walletConnected,
     walletAddress,
     formatAddress,
   } = useWallet();
@@ -39,7 +38,7 @@ const Header = ({
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-   s
+   
   };
 
   return (

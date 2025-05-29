@@ -136,8 +136,6 @@ const App = () => {
 
   const [baskets, setBaskets] = useState([]);
   const [selectedBasket, setSelectedBasket] = useState(null);
-  const [walletConnected, setWalletConnected] = useState(false);
-
   const [showWalletModal, setShowWalletModal] = useState(false);
 
 
@@ -155,27 +153,37 @@ const App = () => {
   });
 
 
-  useEffect(() => {
-    const fetchBaskets = async () => {
-
-      try {
-        setLoading(true);
-        const response = await getBaskets("100");
-        if (response && response.data) {
-          console.log("Fetched Baskets:", response.data);
-          setBaskets(response.data);
-        } else {
-          console.error("Failed to fetch baskets:", response);
-        }
-      } catch (error) {
-        console.error("Error fetching baskets:", error);
-      } finally {
+useEffect(() => {
+  const fetchBaskets = async () => {
+    try {
+      setLoading(true);
+      
+      // Set a timeout to ensure loading is false after 400ms
+      const timeoutId = setTimeout(() => {
         setLoading(false);
+      }, 400);
+      
+      const response = await getBaskets("100");
+      
+      // Clear timeout since we got a response
+      clearTimeout(timeoutId);
+      
+      if (response && response.data) {
+        console.log("Fetched Baskets:", response.data);
+        setBaskets(response.data);
+      } else {
+        console.error("Failed to fetch baskets:", response);
       }
-    };
-    fetchBaskets();
-  }, []); // Removed filteredBaskets, searchTerm, selectedCategory from dependencies
+    } catch (error) {
+      console.error("Error fetching baskets:", error);
+    } finally {
+      // Ensure loading is false
+      setLoading(false);
+    }
+  };
 
+  fetchBaskets();
+}, []);
   if (loading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
@@ -201,11 +209,8 @@ const App = () => {
           <Route path="/explore" element={
             <ExplorePage
               darkMode={darkMode}
-              setWalletConnected={setWalletConnected}
               setShowWalletModal={setShowWalletModal}
-              // setCurrentView removed
               showWalletModal={showWalletModal}
-              walletConnected={walletConnected}
               setSearchTerm={setSearchTerm}
               searchTerm={searchTerm}
               setSelectedCategory={setSelectedCategory}
@@ -221,8 +226,7 @@ const App = () => {
               darkMode={darkMode}
               selectedBasket={selectedBasket} // Ensure this is set when navigating to detail
               setShowWalletModal={setShowWalletModal}
-              walletConnected={walletConnected}
-              setWalletConnected={setWalletConnected}
+           
             />
           } />
           <Route path="/confirm" element={
@@ -239,8 +243,6 @@ const App = () => {
           <Route path="/create" element={
             <CreateBasketPage
               darkMode={darkMode}
-              setWalletConnected={setWalletConnected}
-              walletConnected={walletConnected}
               setShowWalletModal={setShowWalletModal}
             />
           } />
@@ -266,7 +268,6 @@ const App = () => {
         <WalletModal
           showWalletModal={showWalletModal}
           darkMode={darkMode}
-          setWalletConnected={setWalletConnected}
           setShowWalletModal={setShowWalletModal}
         />
       </>
