@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     TrendingUp,
     TrendingDown,
@@ -12,23 +12,40 @@ import {
     BarChart3,
     Coins,
     ArrowRight,
+    ChevronDown,
+    ShoppingBasket
 
 } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+
 
 
 
 
 export const LandingPage = ({
-    darkMode, 
+    darkMode,
     setDarkMode,
-    mockBaskets, 
+    mockBaskets,
     stats,
     features }) => {
 
     const navigate = useNavigate(); // Initialize useNavigate hook
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
     return (<div className={`max-w-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-black' : 'bg-gradient-to-br from-white via-purple-50 to-gray-100'} ${darkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
         {/* Header */}
         <header className="flex justify-between items-center p-6 relative z-10">
@@ -42,21 +59,61 @@ export const LandingPage = ({
                 >
                     {darkMode ? '☀️' : '🌙'}
                 </button>
-                <button
-                    onClick={() =>  navigate(`create`)}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105"
-                >
-                    Create Basket
-                </button>
+                {/* Basket Hub Dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                    <button
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white hover:opacity-90 transition-opacity"
+                    >
+                      < ShoppingBasket className="w-4 h-4" />
+<span>Basket Hub</span>
+<ChevronDown className="w-4 h-4" />
+                    </button>
+
+                    {isDropdownOpen && (
+                        <div className={`absolute right-0 mt-2 w-48 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                            } border rounded-lg shadow-xl z-20`}>
+                            <ul className="p-2 space-y-1">
+                                <li>
+                                    <button
+                                        onClick={() => {
+                                            navigate("/create");
+                                            setIsDropdownOpen(false);
+                                        }}
+                                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-700 transition-colors"
+                                    >
+                                        Create Basket
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        onClick={() => {
+                                            navigate("/portfolio");
+                                            setIsDropdownOpen(false);
+                                        }}
+                                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-700 transition-colors"
+                                    >
+                                        My Baskets
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    )}
+                </div>
+
             </div>
         </header>
 
         {/* Hero Section */}
         <section className="text-center py-20 px-6">
             <div className="max-w-4xl mx-auto">
-                <h1 className="text-6xl font-extrabold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent leading-tight">
+                 <h1 className="text-6xl font-extrabold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent leading-tight">
+                 <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                     The DeFi-Native ETF Platform
+                </motion.h1>
                 </h1>
+                
+
                 <p className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-8 max-w-3xl mx-auto leading-relaxed`}>
                     Create, manage, and trade baskets of tokens representing themes like AI, DeFi blue chips, and Solana ecosystem.
                     Simplified diversified investing powered by smart contracts and OKX DEX integration.

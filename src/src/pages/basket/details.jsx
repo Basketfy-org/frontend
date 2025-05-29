@@ -14,6 +14,7 @@ import { saveBuyBasket } from '../../api/basketApi';
 import { useWallet } from '../../hook/wallet';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/header';
+import { showErrorAlert } from '../../components/alert';
 
 const BasketDetailPage = ({ darkMode, setShowWalletModal, walletConnected, setWalletConnected }) => {
 
