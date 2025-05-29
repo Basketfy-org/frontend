@@ -171,15 +171,15 @@ const App = () => {
 
         if (response && response.data) {
 
-          logger(`Fetched Baskets:, ${response.data}`);
+          logger(`Fetched Baskets:, ${ JSON.stringify(response.data)}`);
           setBaskets(response.data);
         } else {
 
-          logger(`Failed to fetch baskets:, ${response}`);
+          logger(`Failed to fetch baskets:, ${JSON.stringify(response)}`);
         }
       } catch (error) {
 
-        logger(`Error fetching baskets:, ${error}`);
+        logger(`Error fetching baskets:, ${error.message}`);
       } finally {
         // Ensure loading is false
         setLoading(false);

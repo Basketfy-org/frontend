@@ -1,16 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-   
-    Share2, 
+
+    Share2,
 
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 
 
- const SuccessPage = ({ darkMode }) => {
-      const location = useLocation(); // Hook to access location object
+const SuccessPage = ({ darkMode }) => {
+    const location = useLocation(); // Hook to access location object
     const navigate = useNavigate(); // For navigating back or to explore
     const [basketDetails, setBasketDetails] = useState(null); // State to hold the received basket payload
 
@@ -28,7 +28,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
     const handleShare = () => {
         // Implement share logic (e.g., copy URL or open share dialog)
         if (basketDetails?.address) {
-            const shareUrl = `${window.location.origin}/basket/${basketDetails.address}`; // Example URL
+            const shareUrl = ""// `${window.location.origin}/basket/${basketDetails.address}`; // Example URL
             navigator.clipboard.writeText(shareUrl)
                 .then(() => alert('Basket link copied to clipboard!'))
                 .catch(err => console.error('Failed to copy text: ', err));
@@ -38,14 +38,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
         <div className={`max-w-md w-full mx-4 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-8 shadow-xl text-center`}>
             <div className="text-6xl mb-4">🎉</div>
             <h2 className="text-3xl font-bold mb-4">Congratulations!</h2>
-            <p className="text-lg mb-6">You now own the <span className="font-semibold text-purple-400">{basketDetails.basketData.basketName}</span>!</p>
+            <p className="text-lg mb-6">You now own the <span className="font-semibold text-purple-400">{basketDetails?.basketData.basketName}</span>!</p>
 
             <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} mb-6`}>
-                <div className="text-3xl mb-2">{basketDetails.basketData?.image}</div>
+                <div className="text-3xl mb-2">{basketDetails?.basketData.image}</div>
                 <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                         <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>bToken Balance:</span>
-                        <span className="font-medium">{(parseFloat(investAmount || '0') * 0.95).toFixed(2)}</span>
+                        <span className="font-medium">{(parseFloat(basketDetails?.investmentAmount || '0') * 0.95).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Basket NFT:</span>
@@ -56,13 +56,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
             <div className="space-y-3">
                 <button
-                        onClick={() => navigate('/portfolio')} // Go to portfolio page
+                    onClick={() => navigate('/portfolio')} // Go to portfolio page
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300"
                 >
                     View Portfolio
                 </button>
                 <button
-                                            onClick={() => navigate('/explore')} // Go to explore page
+                    onClick={() => navigate('/explore')} // Go to explore page
                     className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} font-medium py-3 px-6 rounded-lg transition-colors`}
                 >
                     Explore More Baskets

@@ -39,7 +39,7 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
       setBasketDetails(location.state.basketDetails);
     } else {
       // If no data is passed, redirect to a safe page (e.g., explore)
-      console.warn("No basket details found in navigation state. Redirecting to explore.");
+      logger("No basket details found in navigation state. Redirecting to explore.");
       navigate('/explore');
     }
   }, [location.state, navigate]); // Depend on location.state and navigate
@@ -223,6 +223,8 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
                           const data = await saveBuyBasket(buyBasketData);
 
                           logger('Basket created:', data);
+                          buyBasketData["investmentAmount"]=investAmount;
+                          console.log(buyBasketData)
                           navigate('/confirm', { state: { basketPayload: buyBasketData } });
                         }
 
