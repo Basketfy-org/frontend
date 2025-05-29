@@ -65,9 +65,9 @@ export const LandingPage = ({
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white hover:opacity-90 transition-opacity"
                     >
-                      < ShoppingBasket className="w-4 h-4" />
-<span>Basket Hub</span>
-<ChevronDown className="w-4 h-4" />
+                        < ShoppingBasket className="w-4 h-4" />
+                        <span>Basket Hub</span>
+                        <ChevronDown className="w-4 h-4" />
                     </button>
 
                     {isDropdownOpen && (
@@ -107,12 +107,10 @@ export const LandingPage = ({
         {/* Hero Section */}
         <section className="text-center py-20 px-6">
             <div className="max-w-4xl mx-auto">
-                 <h1 className="text-6xl font-extrabold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent leading-tight">
-                 <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                <h1 className="text-6xl font-extrabold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent leading-tight">
                     The DeFi-Native ETF Platform
-                </motion.h1>
                 </h1>
-                
+
 
                 <p className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-8 max-w-3xl mx-auto leading-relaxed`}>
                     Create, manage, and trade baskets of tokens representing themes like AI, DeFi blue chips, and Solana ecosystem.
@@ -128,7 +126,7 @@ export const LandingPage = ({
                     >
                         Explore Baskets
                     </button>
-                    <button 
+                    <button
                         onClick={() => navigate(`/how-it-works`)} className={`${darkMode ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-700'} font-semibold flex items-center gap-2 transition-colors`}>
                         Learn How It Works <ArrowRight className="w-4 h-4" />
                     </button>

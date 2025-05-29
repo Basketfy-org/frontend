@@ -196,9 +196,10 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, walletConnected, setWa
                           basketDetails.basketReferenceId,
                         )
 
-                        console.log('Basket created successfully:', result["transactionSignature"]);
+                     
 
                         if (result["transactionSignature"] !== null && result["success"]) {
+                             console.log('Basket mint successfully:', result["transactionSignature"]);
                           const data = await saveBuyBasket(buyBasketData);
                           console.log('Basket created:', data);
                           navigate('/confirm', { state: { basketPayload: buyBasketData } });

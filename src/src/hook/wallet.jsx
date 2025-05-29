@@ -469,6 +469,7 @@ export const WalletProvider = ({ children }) => {
           );
           const tx = new anchor.web3.Transaction().add(createATAIx);
           await program.provider.sendAndConfirm(tx, []);
+          console.log("Associated token account created:", userTokenAccount.toString());
         }
       }
 
@@ -572,6 +573,7 @@ export const WalletProvider = ({ children }) => {
   };
 
   const value = {
+
     // State
     wallet,
     walletAddress,
@@ -591,7 +593,6 @@ export const WalletProvider = ({ children }) => {
     sendTransaction,
     getBalance,
     setAnchorProvider,
-
 
     // Basket operations
     createBasket,
