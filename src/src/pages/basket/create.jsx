@@ -20,6 +20,7 @@ const CreateBasketPage = ({ darkMode, setShowWalletModal }) => {
 
   const [basketName, setBasketName] = useState('');
   const [basketUri, setBasketUri] = useState('');
+  const [creatorName, setCreatorName] = useState('');
   const [basketSymbol, setBasketSymbol] = useState('');
   const [basketDescription, setBasketDescription] = useState('');
   const [selectedTokens, setSelectedTokens] = useState([]);
@@ -46,136 +47,136 @@ const CreateBasketPage = ({ darkMode, setShowWalletModal }) => {
   ];
 
   const totalWeight = Object.values(tokenWeights).reduce((sum, weight) => sum + (parseFloat(weight) || 0), 0);
- useEffect(() => {
-  let timeoutId;
-  let isCancelled = false;
+  useEffect(() => {
+    let timeoutId;
+    let isCancelled = false;
 
-  // Set up the timeout to fallback to availableTokens after 400ms
-  timeoutId = setTimeout(() => {
-    if (!isCancelled) {
-      logger("Token fetch timeout reached, using fallback availableTokens");
-      setTokens(availableTokens);
-    }
-  }, 400);
-
-  // Fetch available tokens
-  getAvailableTokens()
-    .then(tokens => {
-      // Clear timeout since we got a response
-      clearTimeout(timeoutId);
-      
+    // Set up the timeout to fallback to availableTokens after 400ms
+    timeoutId = setTimeout(() => {
       if (!isCancelled) {
-        setTokens(tokens);
-        logger("Successfully fetched tokens from API");
-      }
-    })
-    .catch(error => {
-      // Clear timeout
-      clearTimeout(timeoutId);
-      
-      if (!isCancelled) {
-        logger("Error fetching available tokens:", error);
-        // Fallback to availableTokens on error as well
+        logger("Token fetch timeout reached, using fallback availableTokens");
         setTokens(availableTokens);
       }
-    });
+    }, 400);
 
-  // Cleanup function
-  return () => {
-    isCancelled = true;
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-  };
-}, []);
+    // Fetch available tokens
+    getAvailableTokens()
+      .then(tokens => {
+        // Clear timeout since we got a response
+        clearTimeout(timeoutId);
 
+        if (!isCancelled) {
+          setTokens(tokens);
+          logger("Successfully fetched tokens from API");
+        }
+      })
+      .catch(error => {
+        // Clear timeout
+        clearTimeout(timeoutId);
 
- async function getAvailableTokens() {
-  try {
-    // 1. Get token metadata
-    const tokenMetadata = await getBatchToken();
-    const metadataList = tokenMetadata.data.slice(0, 50); // limit to 50 tokens
-
-    // 2. Extract contract addresses
-    const contractAddresses = metadataList.map(token => token.tokenContractAddress);
-
-    let allPriceData = [];
-    let batchFailed = false;
-
-    // 3. Attempt batch price lookup
-    try {
-      const response = await getBatchTokenPrice(contractAddresses.join(','));
-      allPriceData = response.data;
-    } catch (error) {
-      console.warn("Primary batch token price fetch failed:", error);
-      batchFailed = true;
-    }
-
-    // 4. Prepare price map
-    const priceMap = new Map();
-
-    if (!batchFailed && allPriceData.length > 0) {
-      allPriceData.forEach(priceData => {
-        priceMap.set(priceData.tokenContractAddress, {
-          price: parseFloat(priceData.price),
-          priceChange24H: priceData.priceChange24H,
-          volume24H: priceData.volume24H,
-          marketCap: priceData.marketCap
-        });
+        if (!isCancelled) {
+          logger("Error fetching available tokens:", error);
+          // Fallback to availableTokens on error as well
+          setTokens(availableTokens);
+        }
       });
-    } else {
-      // 5. Fallback to CoinGecko using token symbols
-      const symbols = metadataList.map(token => token.tokenSymbol.toLowerCase()).join(',');
 
-      try {
-        const coinGeckoResponse = await getCoinGeckoTokenPrices(symbols);
-
-        coinGeckoResponse.forEach(tokenData => {
-          const match = metadataList.find(token =>
-            token.tokenSymbol.toLowerCase() === tokenData.symbol.toLowerCase()
-          );
-
-          if (match) {
-            priceMap.set(match.tokenContractAddress, {
-              price: tokenData.current_price || 0,
-              priceChange24H: tokenData.price_change_percentage_24h || null,
-              volume24H: tokenData.total_volume || null,
-              marketCap: tokenData.market_cap || null
-            });
-          }
-        });
-
-        logger(`Successfully retrieved fallback prices from CoinGecko`);
-      } catch (fallbackError) {
-        logger("CoinGecko fallback also failed:", fallbackError);
+    // Cleanup function
+    return () => {
+      isCancelled = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
       }
+    };
+  }, []);
+
+
+  async function getAvailableTokens() {
+    try {
+      // 1. Get token metadata
+      const tokenMetadata = await getBatchToken();
+      const metadataList = tokenMetadata.data.slice(0, 50); // limit to 50 tokens
+
+      // 2. Extract contract addresses
+      const contractAddresses = metadataList.map(token => token.tokenContractAddress);
+
+      let allPriceData = [];
+      let batchFailed = false;
+
+      // 3. Attempt batch price lookup
+      try {
+        const response = await getBatchTokenPrice(contractAddresses.join(','));
+        allPriceData = response.data;
+      } catch (error) {
+        console.warn("Primary batch token price fetch failed:", error);
+        batchFailed = true;
+      }
+
+      // 4. Prepare price map
+      const priceMap = new Map();
+
+      if (!batchFailed && allPriceData.length > 0) {
+        allPriceData.forEach(priceData => {
+          priceMap.set(priceData.tokenContractAddress, {
+            price: parseFloat(priceData.price),
+            priceChange24H: priceData.priceChange24H,
+            volume24H: priceData.volume24H,
+            marketCap: priceData.marketCap
+          });
+        });
+      } else {
+        // 5. Fallback to CoinGecko using token symbols
+        const symbols = metadataList.map(token => token.tokenSymbol.toLowerCase()).join(',');
+
+        try {
+          const coinGeckoResponse = await getCoinGeckoTokenPrices(symbols);
+
+          coinGeckoResponse.forEach(tokenData => {
+            const match = metadataList.find(token =>
+              token.tokenSymbol.toLowerCase() === tokenData.symbol.toLowerCase()
+            );
+
+            if (match) {
+              priceMap.set(match.tokenContractAddress, {
+                price: tokenData.current_price || 0,
+                priceChange24H: tokenData.price_change_percentage_24h || null,
+                volume24H: tokenData.total_volume || null,
+                marketCap: tokenData.market_cap || null
+              });
+            }
+          });
+
+          logger(`Successfully retrieved fallback prices from CoinGecko`);
+        } catch (fallbackError) {
+          logger("CoinGecko fallback also failed:", fallbackError);
+        }
+      }
+
+      // 6. Merge metadata with price data
+      const availableTokens = metadataList.map(token => {
+        const priceInfo = priceMap.get(token.tokenContractAddress);
+
+        return {
+          ticker: token.tokenSymbol,
+          name: token.tokenName,
+          price: priceInfo?.price || 0,
+          isNative: token.tokenContractAddress === NATIVE_SOL,
+          tokenAddress: token.tokenContractAddress,
+          tokenLogoUrl: token.tokenLogoUrl,
+          priceChange24H: priceInfo?.priceChange24H || null,
+          volume24H: priceInfo?.volume24H || null,
+          marketCap: priceInfo?.marketCap || null
+        };
+      });
+
+      logger(`Successfully retrieved ${availableTokens.length} available tokens`);
+      return availableTokens;
+
+    } catch (error) {
+      console.error("Failed to get available tokens:", error);
+      throw error;
     }
-
-    // 6. Merge metadata with price data
-    const availableTokens = metadataList.map(token => {
-      const priceInfo = priceMap.get(token.tokenContractAddress);
-
-      return {
-        ticker: token.tokenSymbol,
-        name: token.tokenName,
-        price: priceInfo?.price || 0,
-        isNative: token.tokenContractAddress === NATIVE_SOL,
-        tokenAddress: token.tokenContractAddress,
-        tokenLogoUrl: token.tokenLogoUrl,
-        priceChange24H: priceInfo?.priceChange24H || null,
-        volume24H: priceInfo?.volume24H || null,
-        marketCap: priceInfo?.marketCap || null
-      };
-    });
-
-    logger(`Successfully retrieved ${availableTokens.length} available tokens`);
-    return availableTokens;
-
-  } catch (error) {
-    console.error("Failed to get available tokens:", error);
-    throw error;
   }
-}
 
 
   // CoinGecko API function based on your provided endpoint
@@ -250,6 +251,18 @@ const CreateBasketPage = ({ darkMode, setShowWalletModal }) => {
                     value={basketUri}
                     onChange={(e) => setBasketUri(e.target.value)}
                     placeholder="Basket Uri"
+                    className={`w-full px-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-300'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Creator
+                  </label>
+                  <input
+                    type="text"
+                    value={creatorName}
+                    onChange={(e) => setCreatorName(e.target.value)}
+                    placeholder="Basket Creator"
                     className={`w-full px-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-300'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
                   />
                 </div>
@@ -382,13 +395,14 @@ const CreateBasketPage = ({ darkMode, setShowWalletModal }) => {
                   const sessionId = "current_session_id";
 
                   const basketPayload = {
+                    userId,
                     category: 'DeFi',
                     name: basketName,
                     description: basketDescription,
-                    creator: userId,
+                    creator: creatorName,
                     symbol: basketName.slice(0, 6).toUpperCase(),
                     uri: basketUri,
-                    image: '',
+                    image: basketUri,
                     basketReferenceId: '',
                     address: "",
                     tokens: selectedTokens.map((ticker) => {

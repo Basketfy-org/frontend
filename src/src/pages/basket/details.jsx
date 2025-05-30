@@ -200,7 +200,7 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
                           "image": basketDetails.image,
                           "createdBy": basketDetails.creator,
                           "totalWeight": 100,
-                          "items": newBasketTokens,
+                          "tokens": newBasketTokens,
                         },
                         "category": basketDetails.category,
                       }

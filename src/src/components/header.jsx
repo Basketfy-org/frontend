@@ -133,7 +133,12 @@ const Header = ({
         {/* Bottom-Left Basket Details */}
         {basketDetails && (
           <div className="mt-4 flex items-center gap-4">
-            <div className="text-4xl">{basketDetails.image}</div>
+      
+             <img
+                        src={basketDetails.image}
+                        alt="No baskets"
+                        className="w-12 h-12 mb-4 opacity-50 text-center"
+                    />
             <div>
               <h1 className="text-3xl font-bold">{basketDetails.name}</h1>
               <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>

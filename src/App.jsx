@@ -34,7 +34,7 @@ import WalletModal from './src/modal/wallet_modal';
 import ExplorePage from './src/pages/explore';
 import BasketDetailPage from './src/pages/basket/details';
 import ConfirmTransaction from './src/pages/transactions/confirm_tx';
-import PortfolioPage from './src/pages/portfolio';
+import PortfolioPage from './src/pages/portfolio/overview';
 import CreateBasketPage from './src/pages/basket/create';
 import SuccessPage from './src/pages/success';
 import { getBaskets } from './src/api/basketApi';
@@ -42,6 +42,7 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import CreateSuccessPage from './src/pages/basket/create_success';
 import HowItWorks from './src/components/how_it_works';
 import logger from './src/uutils/logger';
+import UserBasketPage from './src/pages/portfolio/user_basket_detail';
 
 
 
@@ -213,6 +214,9 @@ const App = () => {
           <Route path="/explore" element={
             <ExplorePage
               darkMode={darkMode}
+              setBaskets={setBaskets}
+              setLoading={setLoading}
+              loading={loading}
               setShowWalletModal={setShowWalletModal}
               showWalletModal={showWalletModal}
               setSearchTerm={setSearchTerm}
@@ -221,7 +225,7 @@ const App = () => {
               setSelectedBasket={setSelectedBasket}
               selectedCategory={selectedCategory}
               filteredBaskets={filteredBaskets}
-              loading={loading} // Pass loading state
+           
             />
           } />
           {/* Use URL parameters for detail pages, e.g., /baskets/:id or /baskets/:symbol */}
@@ -259,6 +263,13 @@ const App = () => {
           <Route path="/portfolio" element={
             <PortfolioPage
               darkMode={darkMode}
+              filteredBaskets={filteredBaskets}
+            />
+          } />
+           <Route path="/user-basket-portfolio" element={
+            <UserBasketPage
+              darkMode={darkMode}
+             
             />
           } />
           <Route path="/how-it-works" element={
