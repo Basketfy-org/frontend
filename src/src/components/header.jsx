@@ -87,7 +87,7 @@ const Header = ({
                         <Copy className="w-3 h-3" />
                       </button>
                       <button
-                        onClick={() => window.open(`https://etherscan.io/address/${walletAddress}`, '_blank')}
+                        onClick={() => window.open(`https://solscan.io/address/${walletAddress}`, '_blank')}
                         className={`p-1 rounded hover:${darkMode ? 'bg-gray-700' : 'bg-gray-100'
                           } transition-colors`}
                         title="View on Etherscan"

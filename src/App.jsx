@@ -46,6 +46,7 @@ import UserBasketPage from './src/pages/portfolio/user_basket_detail';
 
 
 
+
 // Mock data
 const mockBaskets = [
   {
@@ -156,7 +157,9 @@ const App = () => {
 
 
   useEffect(() => {
+
     const fetchBaskets = async () => {
+
       try {
         setLoading(true);
 
@@ -172,7 +175,7 @@ const App = () => {
 
         if (response && response.data) {
 
-          logger(`Fetched Baskets:, ${ JSON.stringify(response.data)}`);
+          logger(`Fetched Baskets:, ${JSON.stringify(response.data)}`);
           setBaskets(response.data);
         } else {
 
@@ -189,6 +192,8 @@ const App = () => {
 
     fetchBaskets();
   }, []);
+
+
   if (loading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
@@ -209,6 +214,8 @@ const App = () => {
               mockBaskets={mockBaskets} // Consider using `baskets` state after fetching
               stats={stats}
               features={features}
+              setShowWalletModal={setShowWalletModal}
+              showWalletModal={showWalletModal}
             />
           } />
           <Route path="/explore" element={
@@ -225,7 +232,7 @@ const App = () => {
               setSelectedBasket={setSelectedBasket}
               selectedCategory={selectedCategory}
               filteredBaskets={filteredBaskets}
-           
+
             />
           } />
           {/* Use URL parameters for detail pages, e.g., /baskets/:id or /baskets/:symbol */}
@@ -260,16 +267,16 @@ const App = () => {
               darkMode={darkMode}
             />
           } />
-          <Route path="/portfolio" element={
+          <Route path="/my-baskets" element={
             <PortfolioPage
               darkMode={darkMode}
               filteredBaskets={filteredBaskets}
             />
           } />
-           <Route path="/user-basket-portfolio" element={
+          <Route path="/user-basket-portfolio" element={
             <UserBasketPage
               darkMode={darkMode}
-             
+
             />
           } />
           <Route path="/how-it-works" element={

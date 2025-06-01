@@ -19,6 +19,7 @@ import {
 
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useWallet } from '../hook/wallet';
 
 
 
@@ -29,11 +30,21 @@ export const LandingPage = ({
     setDarkMode,
     mockBaskets,
     stats,
+    setShowWalletModal,
+
     features }) => {
+
+    const {
+        disconnectWallet,
+        walletConnected,
+        walletAddress,
+        formatAddress,
+    } = useWallet();
 
     const navigate = useNavigate(); // Initialize useNavigate hook
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const [shouldNavigateAfterConnect, setShouldNavigateAfterConnect] = useState(false);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -46,6 +57,14 @@ export const LandingPage = ({
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+    useEffect(() => {
+        if (walletConnected && shouldNavigateAfterConnect) {
+            navigate("/my-baskets");
+            setIsDropdownOpen(false);
+            setShouldNavigateAfterConnect(false); // Reset flag
+        }
+    }, [walletConnected, shouldNavigateAfterConnect, navigate]);
+
     return (<div className={`max-w-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-black' : 'bg-gradient-to-br from-white via-purple-50 to-gray-100'} ${darkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
         {/* Header */}
         <header className="flex justify-between items-center p-6 relative z-10">
@@ -78,6 +97,7 @@ export const LandingPage = ({
                                     <button
                                         onClick={() => {
                                             navigate("/create");
+
                                             setIsDropdownOpen(false);
                                         }}
                                         className="w-full text-left px-3 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-700 transition-colors"
@@ -87,10 +107,18 @@ export const LandingPage = ({
                                 </li>
                                 <li>
                                     <button
+
                                         onClick={() => {
-                                            navigate("/portfolio");
-                                            setIsDropdownOpen(false);
+                                            if (!walletConnected) {
+                                                setShowWalletModal(true);
+                                                setShouldNavigateAfterConnect(true);
+                                            } else {
+                                                navigate("/my-baskets");
+                                                setIsDropdownOpen(false);
+                                            }
+
                                         }}
+
                                         className="w-full text-left px-3 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-700 transition-colors"
                                     >
                                         My Baskets
@@ -292,19 +320,19 @@ export const LandingPage = ({
                     Join thousands of users creating and trading themed crypto baskets on Solana
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button 
-                    onClick={() => {
-                        navigate('/create');
-                    }}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105">
+                    <button
+                        onClick={() => {
+                            navigate('/create');
+                        }}
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105">
                         Create Your Basket
                     </button>
 
-                    <button 
-                    onClick={() => {
-                        navigate('/explore');
-                    }}
-                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white hover:bg-gray-50 text-gray-900'} font-semibold py-4 px-8 rounded-xl transition-all duration-300 border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                    <button
+                        onClick={() => {
+                            navigate('/explore');
+                        }}
+                        className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white hover:bg-gray-50 text-gray-900'} font-semibold py-4 px-8 rounded-xl transition-all duration-300 border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                         Browse Marketplace
                     </button>
                 </div>

@@ -2,6 +2,9 @@ import base58 from "bs58";
 import * as solanaWeb3 from "@solana/web3.js";
 import { Connection } from "@solana/web3.js";
 import CryptoJS from "crypto-js";
+import { OKXDexClient } from '@okx-dex/okx-dex-sdk';
+
+
 
 // Use a reliable RPC endpoint
 export const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=45f9798b-9483-4c10-87b6-47dcb952a345", {
@@ -26,6 +29,7 @@ const projectId = import.meta.env.VITE_OKX_API_PROJECT_ID;
 export const userPrivateKey = import.meta.env.VITE_OKX_SOLANA_PRIVATE_KEY;
 export const userAddress = import.meta.env.VITE_OKX_SOLANA_ADDRESS;
 export const userEthAddress = import.meta.env.VITE_OKX_ETH_ADDRESS;
+ const altAPIKey = import.meta.env.VITE_COINGECKO_API_KEY
 
 // Base headers function with validation
 function getHeaders(timestamp, method, requestPath, queryString = "", body = "") {
@@ -411,4 +415,132 @@ export async function getSingleChainSwap(params) {
 
 export async function executeSingleChainTransaction(txData) {
     return await executeTransaction(txData);
+}
+
+
+
+export async function getAvailableTokens() {
+  try {
+    // Get token metadata (names, symbols, logos, addresses)
+    const tokenMetadata = await getBatchToken();
+
+    // Extract contract addresses for price lookup
+    const contractAddresses = tokenMetadata.data.map(token => token.tokenContractAddress);
+
+    // Step 2: Handle APIs that allow max 100 contract addresses per call
+    const chunkArray = (arr, size) => {
+      const chunks = [];
+      for (let i = 0; i < arr.length; i += size) {
+        chunks.push(arr.slice(i, i + size));
+      }
+      return chunks;
+    };
+
+    const addressChunks = chunkArray(contractAddresses, 100);
+    let allPriceData = [];
+    let useCoinGecko = false;
+
+    // Try to get prices from primary API
+    try {
+      for (const chunk of addressChunks) {
+        const response = await getBatchTokenPrice(chunk.join(','));
+        allPriceData = allPriceData.concat(response.data);
+      }
+    } catch (error) {
+      console.warn(`Primary batch price lookup failed, switching to CoinGecko:`, error);
+      useCoinGecko = true;
+    }
+
+    // Create a map for quick price lookup by contract address
+    const priceMap = new Map();
+
+    if (useCoinGecko) {
+      // Use CoinGecko for all tokens
+      console.log(`Using CoinGecko for all ${tokenMetadata.data.length} tokens`);
+      
+      try {
+        const symbols = tokenMetadata.data.map(token => token.tokenSymbol.toLowerCase()).join(',');
+        
+        if (symbols) {
+          const coinGeckoResponse = await getCoinGeckoTokenPrices("btc");
+          
+          // Process CoinGecko response and add to priceMap
+          coinGeckoResponse.forEach(tokenData => {
+            // Find the corresponding token by symbol to get the contract address
+            const matchingToken = tokenMetadata.data.find(token => 
+              token.tokenSymbol.toLowerCase() === tokenData.symbol.toLowerCase()
+            );
+            
+            if (matchingToken) {
+              priceMap.set(matchingToken.tokenContractAddress, {
+                price: tokenData.current_price || 0,
+                priceChange24H: tokenData.price_change_percentage_24h || null,
+                volume24H: tokenData.total_volume || null,
+                marketCap: tokenData.market_cap || null
+              });
+            }
+          });
+          
+          console.log(`Successfully retrieved ${coinGeckoResponse.length} prices from CoinGecko`);
+        }
+      } catch (coinGeckoError) {
+        console.error("CoinGecko fallback also failed:", coinGeckoError);
+        // Continue with no price data, prices will be set to 0
+      }
+    } else {
+      // Use primary API data
+      allPriceData.forEach(priceData => {
+        priceMap.set(priceData.tokenContractAddress, {
+          price: parseFloat(priceData.price),
+          priceChange24H: priceData.priceChange24H,
+          volume24H: priceData.volume24H,
+          marketCap: priceData.marketCap
+        });
+      });
+    }
+
+    // Merge the data into the desired format
+    const availableTokens = tokenMetadata.data.map(token => {
+      const priceInfo = priceMap.get(token.tokenContractAddress);
+
+      return {
+        ticker: token.tokenSymbol,
+        name: token.tokenName,
+        price: priceInfo ? priceInfo.price : 0,
+        isNative: token.tokenContractAddress === NATIVE_SOL,
+        tokenAddress: token.tokenContractAddress,
+        tokenLogoUrl: token.tokenLogoUrl,
+        // Optional: include additional price data
+        priceChange24H: priceInfo ? priceInfo.priceChange24H : null,
+        volume24H: priceInfo ? priceInfo.volume24H : null,
+        marketCap: priceInfo ? priceInfo.marketCap : null
+      };
+    });
+
+    console.log("Merged available tokens:", availableTokens);
+    return availableTokens;
+
+  } catch (error) {
+    console.error("Failed to get available tokens:", error);
+    throw error;
+  }
+}
+
+// CoinGecko API function based on your provided endpoint
+async function getCoinGeckoTokenPrices(symbol) {
+  const response = await fetch(
+    `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=solana-ecosystem&precision=full`,
+    {
+      headers: {
+        'accept': 'application/json',
+        'x-cg-api-key': altAPIKey
+      }
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error(`CoinGecko API error: ${response.status}`);
+  }
+  
+  return response.json();
 }

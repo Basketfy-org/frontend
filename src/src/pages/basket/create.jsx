@@ -8,7 +8,7 @@ import {
 import { saveBasket } from '../../api/basketApi';
 import { useWallet } from '../../hook/wallet';
 import Header from '../../components/header';
-import { getBatchToken, getBatchTokenPrice, NATIVE_SOL, SOLANA_CHAIN_ID } from '../../api/dexUtils';
+import { getAvailableTokens, getBatchToken, getBatchTokenPrice, NATIVE_SOL, SOLANA_CHAIN_ID } from '../../api/dexUtils';
 import { useNavigate } from 'react-router-dom';
 import { showErrorAlert } from '../../components/alert';
 import toast from 'react-hot-toast';
@@ -47,156 +47,56 @@ const CreateBasketPage = ({ darkMode, setShowWalletModal }) => {
   ];
 
   const totalWeight = Object.values(tokenWeights).reduce((sum, weight) => sum + (parseFloat(weight) || 0), 0);
-  useEffect(() => {
-    let timeoutId;
-    let isCancelled = false;
+useEffect(() => {
+  let timeoutId;
+  let isCancelled = false;
 
-    // Set up the timeout to fallback to availableTokens after 400ms
-    timeoutId = setTimeout(() => {
+  // Set up the timeout to fallback to availableTokens after 400ms
+  timeoutId = setTimeout(() => {
+    if (!isCancelled) {
+      logger("Token fetch timeout reached, using fallback availableTokens");
+      // Filter out tokens with zero price from fallback as well
+      const filteredAvailableTokens = availableTokens.filter(token => token.price > 0);
+      setTokens(filteredAvailableTokens);
+    }
+  }, 400);
+
+  // Fetch available tokens
+  getAvailableTokens()
+    .then(mergedTokens => {
+      // Clear timeout since we got a response
+      clearTimeout(timeoutId);
+
+      // Always set tokens from API response, even after timeout
       if (!isCancelled) {
-        logger("Token fetch timeout reached, using fallback availableTokens");
-        setTokens(availableTokens);
+        // Filter out tokens with zero price
+        const tokensWithPrice = mergedTokens.filter(token => parseFloat(token.price) > 0);
+        setTokens(tokensWithPrice);
+        logger("Successfully fetched tokens from API");
       }
-    }, 400);
+    })
+    .catch(error => {
+      // Clear timeout
+      clearTimeout(timeoutId);
 
-    // Fetch available tokens
-    getAvailableTokens()
-      .then(tokens => {
-        // Clear timeout since we got a response
-        clearTimeout(timeoutId);
-
-        if (!isCancelled) {
-          setTokens(tokens);
-          logger("Successfully fetched tokens from API");
-        }
-      })
-      .catch(error => {
-        // Clear timeout
-        clearTimeout(timeoutId);
-
-        if (!isCancelled) {
-          logger("Error fetching available tokens:", error);
-          // Fallback to availableTokens on error as well
-          setTokens(availableTokens);
-        }
-      });
-
-    // Cleanup function
-    return () => {
-      isCancelled = true;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
+      if (!isCancelled) {
+        logger("Error fetching available tokens:", error);
+        // Fallback to availableTokens on error, excluding zero price tokens
+        const filteredAvailableTokens = availableTokens.filter(token => token.price > 0);
+        setTokens(filteredAvailableTokens);
       }
-    };
-  }, []);
+    });
 
-
-  async function getAvailableTokens() {
-    try {
-      // 1. Get token metadata
-      const tokenMetadata = await getBatchToken();
-      const metadataList = tokenMetadata.data.slice(0, 50); // limit to 50 tokens
-
-      // 2. Extract contract addresses
-      const contractAddresses = metadataList.map(token => token.tokenContractAddress);
-
-      let allPriceData = [];
-      let batchFailed = false;
-
-      // 3. Attempt batch price lookup
-      try {
-        const response = await getBatchTokenPrice(contractAddresses.join(','));
-        allPriceData = response.data;
-      } catch (error) {
-        console.warn("Primary batch token price fetch failed:", error);
-        batchFailed = true;
-      }
-
-      // 4. Prepare price map
-      const priceMap = new Map();
-
-      if (!batchFailed && allPriceData.length > 0) {
-        allPriceData.forEach(priceData => {
-          priceMap.set(priceData.tokenContractAddress, {
-            price: parseFloat(priceData.price),
-            priceChange24H: priceData.priceChange24H,
-            volume24H: priceData.volume24H,
-            marketCap: priceData.marketCap
-          });
-        });
-      } else {
-        // 5. Fallback to CoinGecko using token symbols
-        const symbols = metadataList.map(token => token.tokenSymbol.toLowerCase()).join(',');
-
-        try {
-          const coinGeckoResponse = await getCoinGeckoTokenPrices(symbols);
-
-          coinGeckoResponse.forEach(tokenData => {
-            const match = metadataList.find(token =>
-              token.tokenSymbol.toLowerCase() === tokenData.symbol.toLowerCase()
-            );
-
-            if (match) {
-              priceMap.set(match.tokenContractAddress, {
-                price: tokenData.current_price || 0,
-                priceChange24H: tokenData.price_change_percentage_24h || null,
-                volume24H: tokenData.total_volume || null,
-                marketCap: tokenData.market_cap || null
-              });
-            }
-          });
-
-          logger(`Successfully retrieved fallback prices from CoinGecko`);
-        } catch (fallbackError) {
-          logger("CoinGecko fallback also failed:", fallbackError);
-        }
-      }
-
-      // 6. Merge metadata with price data
-      const availableTokens = metadataList.map(token => {
-        const priceInfo = priceMap.get(token.tokenContractAddress);
-
-        return {
-          ticker: token.tokenSymbol,
-          name: token.tokenName,
-          price: priceInfo?.price || 0,
-          isNative: token.tokenContractAddress === NATIVE_SOL,
-          tokenAddress: token.tokenContractAddress,
-          tokenLogoUrl: token.tokenLogoUrl,
-          priceChange24H: priceInfo?.priceChange24H || null,
-          volume24H: priceInfo?.volume24H || null,
-          marketCap: priceInfo?.marketCap || null
-        };
-      });
-
-      logger(`Successfully retrieved ${availableTokens.length} available tokens`);
-      return availableTokens;
-
-    } catch (error) {
-      console.error("Failed to get available tokens:", error);
-      throw error;
+  // Cleanup function
+  return () => {
+    isCancelled = true;
+    if (timeoutId) {
+      clearTimeout(timeoutId);
     }
-  }
+  };
+}, []);
 
 
-  // CoinGecko API function based on your provided endpoint
-  async function getCoinGeckoTokenPrices(symbols) {
-    const response = await fetch(
-      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&symbols=${symbols}&category=solana-ecosystem&precision=full`,
-      {
-        headers: {
-          'accept': 'application/json',
-          'x-cg-api-key': import.meta.env.VITE_COINGECKO_API_KEY
-        }
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`CoinGecko API error: ${response.status}`);
-    }
-
-    return response.json();
-  }
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${darkMode ? 'text-white' : 'text-gray-900'}`}>
