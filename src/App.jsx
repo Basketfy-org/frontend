@@ -129,7 +129,7 @@ const features = [
 
 const stats = [
   { label: "Total Value Locked", value: "$0.00M", icon: <DollarSign className="w-5 h-5" /> },
-  { label: "Active Baskets", value: "47", icon: <Target className="w-5 h-5" /> },
+  { label: "Active Baskets", value: "0", icon: <Target className="w-5 h-5" /> },
   { label: "Total Holders", value: "0.02K", icon: <Users className="w-5 h-5" /> },
   { label: "Avg 7D Performance", value: "+5.8%", icon: <TrendingUp className="w-5 h-5" /> }
 ];
@@ -177,6 +177,7 @@ const App = () => {
 
           logger(`Fetched Baskets:, ${JSON.stringify(response.data)}`);
           setBaskets(response.data);
+          stats[1].value = response.data.length 
         } else {
 
           logger(`Failed to fetch baskets:, ${JSON.stringify(response)}`);
@@ -211,7 +212,7 @@ const App = () => {
             <LandingPage
               darkMode={darkMode}
               setDarkMode={setDarkMode}
-              mockBaskets={mockBaskets} // Consider using `baskets` state after fetching
+              baskets={baskets} // Consider using `baskets` state after fetching
               stats={stats}
               features={features}
               setShowWalletModal={setShowWalletModal}

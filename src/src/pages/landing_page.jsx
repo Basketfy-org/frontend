@@ -28,7 +28,7 @@ import { useWallet } from '../hook/wallet';
 export const LandingPage = ({
     darkMode,
     setDarkMode,
-    mockBaskets,
+    baskets,
     stats,
     setShowWalletModal,
 
@@ -275,7 +275,7 @@ export const LandingPage = ({
             <div className="max-w-6xl mx-auto">
                 <h2 className="text-4xl font-bold mb-12 text-center">Featured Baskets</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {mockBaskets.map((basket) => (
+                    {baskets.filter(b => b.performance7d > 0).map((basket) => (
                         <div
                             key={basket.id}
                             className={`${darkMode ? 'bg-gray-800/50 hover:bg-gray-800/70' : 'bg-white/70 hover:bg-white/90'} backdrop-blur-sm p-8 rounded-2xl hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl cursor-pointer border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
@@ -285,7 +285,16 @@ export const LandingPage = ({
                                 navigate(`/basket/${basket.name}`, { state: { basketDetails: basket } });
                             }}
                         >
-                            <div className="text-4xl mb-4">{basket.image}</div>
+                            <div className="mb-2">
+                                        <img
+                                            src={basket.image || 'https://i.ibb.co/7J52Ldr7/basket-svgrepo-com.png'}
+                                            alt="Basket"
+                                            className="w-12 h-12 rounded-full object-cover"
+                                            onError={(e) => {
+                                                e.target.src = 'https://i.ibb.co/7J52Ldr7/basket-svgrepo-com.png';
+                                            }}
+                                        />
+                                    </div>
                             <h3 className="text-2xl font-semibold mb-3">{basket.name}</h3>
                             <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4 leading-relaxed`}>{basket.description}</p>
                             <div className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm mb-4`}>
