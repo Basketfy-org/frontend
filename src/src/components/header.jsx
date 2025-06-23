@@ -38,7 +38,7 @@ const Header = ({
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-   
+
   };
 
   return (
@@ -116,7 +116,7 @@ const Header = ({
                     <button
                       onClick={() => {
                         disconnectWallet();
-                       
+
                         setIsDropdownOpen(false);
                       }}
                       className="w-full px-3 py-2 text-left text-sm rounded-lg hover:bg-red-600 hover:text-white transition-colors text-red-500"
@@ -133,12 +133,12 @@ const Header = ({
         {/* Bottom-Left Basket Details */}
         {basketDetails && (
           <div className="mt-4 flex items-center gap-4">
-      
-             <img
-                        src={basketDetails.image}
-                        alt="No baskets"
-                        className="w-12 h-12 mb-4 opacity-50 text-center"
-                    />
+
+            <img
+              src={basketDetails.image || 'https://i.ibb.co/7J52Ldr7/basket-svgrepo-com.png'}
+              alt="No baskets"
+              className="w-12 h-12 mb-4 opacity-50 text-center"
+            />
             <div>
               <h1 className="text-3xl font-bold">{basketDetails.name}</h1>
               <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>

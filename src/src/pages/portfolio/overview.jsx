@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     TrendingUp,
     ArrowLeft,
@@ -6,10 +6,65 @@ import {
     TrendingDown,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import logger from '../../uutils/logger';
+import { getUserBaskets } from '../../api/basketApi';
+import { useWallet } from '../../hook/wallet';
 
-export const PortfolioPage = ({ darkMode, filteredBaskets = [] }) => {
+export const PortfolioPage = ({ darkMode }) => {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [filteredBaskets, setFilteredBaskets] = useState([]);
+     const {
+        disconnectWallet,
+        walletConnected,
+        walletAddress,
+        formatAddress,
+      } = useWallet();
+    useEffect(() => {
 
+        const fetchUserBaskets = async () => {
+
+            try {
+                setLoading(true);
+
+                // Set a timeout to ensure loading is false after 400ms
+                const timeoutId = setTimeout(() => {
+                    setLoading(false);
+                }, 400);
+
+                const response = await getUserBaskets( walletAddress,"100");
+
+                // Clear timeout since we got a response
+                clearTimeout(timeoutId);
+
+                if (response && response.data) {
+
+                    logger(`Fetched User Baskets:, ${JSON.stringify(response.data.length)}`);
+                    setFilteredBaskets(response.data);
+                    stats[1].value = response.data.length
+                } else {
+
+                    logger(`Failed to fetch baskets:, ${JSON.stringify(response)}`);
+                }
+            } catch (error) {
+
+                logger(`Error fetching baskets:, ${error.message}`);
+            } finally {
+                // Ensure loading is false
+                setLoading(false);
+            }
+        };
+
+        fetchUserBaskets();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+                <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+        );
+    }
     // Total calculations
     const totalTokens = filteredBaskets.reduce((acc, basket) => {
         return acc + basket.tokens.length;

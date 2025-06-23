@@ -159,32 +159,41 @@ const App = () => {
   useEffect(() => {
 
     const fetchBaskets = async () => {
-
       try {
         setLoading(true);
 
-        // Set a timeout to ensure loading is false after 400ms
+        // Set a timeout to ensure loading is false after 1400ms
         const timeoutId = setTimeout(() => {
           setLoading(false);
-        }, 400);
+        }, 1400);
 
         const response = await getBaskets("100");
 
         // Clear timeout since we got a response
         clearTimeout(timeoutId);
 
-        if (response && response.data) {
-
-          logger(`Fetched Baskets:, ${JSON.stringify(response.data)}`);
-          setBaskets(response.data);
-          stats[1].value = response.data.length 
+        // Check if response exists and has data property
+        if (response && response.result && Array.isArray(response.result)) {
+          console.log("response.data", response.result);
+          logger(`Fetched Baskets: ${response.result.length}`);
+          setBaskets(response.result);
+          stats[1].value = response.result.length;
         } else {
+          // Handle case where response.data is undefined, null, or not an array
+          console.log("Failed to fetch baskets: Invalid response structure", response);
+          logger(`Failed to fetch baskets: Invalid response structure`);
 
-          logger(`Failed to fetch baskets:, ${JSON.stringify(response)}`);
+          // Set empty array instead of undefined
+          setBaskets([]);
+          stats[1].value = 0;
         }
       } catch (error) {
+        logger(`Error fetching baskets: ${error.message}`);
+        console.error("Error fetching baskets:", error);
 
-        logger(`Error fetching baskets:, ${error.message}`);
+        // Set empty array on error
+        setBaskets([]);
+        stats[1].value = 0;
       } finally {
         // Ensure loading is false
         setLoading(false);
@@ -271,7 +280,8 @@ const App = () => {
           <Route path="/my-baskets" element={
             <PortfolioPage
               darkMode={darkMode}
-              filteredBaskets={filteredBaskets}
+              filteredBaskets={baskets}
+
             />
           } />
           <Route path="/user-basket-portfolio" element={

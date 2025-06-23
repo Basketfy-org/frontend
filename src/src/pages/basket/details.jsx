@@ -4,17 +4,16 @@ import React, { useState, useEffect } from 'react';
 import {
   TrendingUp,
   TrendingDown,
-  ArrowLeft,
+
   Loader2,
-  Wallet,
-  Share2,      // Used in BasketDetailPage and SuccessPage
+
 
 } from 'lucide-react';
-import { saveBuyBasket } from '../../api/basketApi';
+
 import { useWallet } from '../../hook/wallet';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/header';
-import { showErrorAlert } from '../../components/alert';
+
 import toast from 'react-hot-toast';
 import logger from '../../uutils/logger';
 
@@ -26,11 +25,11 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
   const [investAmount, setInvestAmount] = useState('');
 
   const {
-    walletAddress,
     walletConnected,
-    formatAddress,
     getBalance,
-    buyBasket,
+    formatAddress,
+    walletAddress
+
   } = useWallet();
 
   useEffect(() => {
@@ -176,23 +175,25 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
                       setIsCreating(false);
                       return;
                     }
+                    console.log("basketDetails:", basketDetails.basketReferenceId)
                     if (investAmount) {
                       setIsBuying(true);
                       const newBasketTokens = basketDetails.tokens.map((item) => ({
-                       
-                        entryPrice:parseFloat (item.price),
-                        isNative:item.isNative,
+
+                        entryPrice: parseFloat(item.price),
+                        isNative: item.isNative,
                         token: item.name,
                         tokenSymbol: item.ticker,
                         description: "Solar energy token",
                         weight: 0.00
                       }));
 
-                      const userId = formatAddress(walletAddress);
+                      const userId = walletAddress;
                       const sessionId = "current_session_id";
                       const buyBasketData = {
                         "userId": userId,
                         "sessionId": sessionId,
+                        "investmentAmount": investAmount,
                         "basketData": {
                           "basketReferenceId": basketDetails.basketReferenceId,
                           "basketName": basketDetails.name,
@@ -220,12 +221,15 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
                         if (result["transactionSignature"] !== null && result["success"]) {
 
                           logger(`Basket mint successfully: ${result["transactionSignature"]}`);
+                          
                           const data = await saveBuyBasket(buyBasketData);
 
                           logger('Basket created:', data);
-                          buyBasketData["investmentAmount"]=investAmount;
+
                           console.log(buyBasketData)
+
                           navigate('/confirm', { state: { basketPayload: buyBasketData } });
+
                         }
 
                       } catch (err) {

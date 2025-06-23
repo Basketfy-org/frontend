@@ -38,6 +38,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 export const UserBasketPage = ({ darkMode = false }) => {
      const navigate = useNavigate();
       const location = useLocation(); // Hook to access location object
+      
     const [basketDetails] = useState({
         name: "DeFi Blue Chip Basket",
         tokens: [
@@ -137,7 +138,7 @@ export const UserBasketPage = ({ darkMode = false }) => {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button 
-                            onClick={() => navigate('/portfolio')}
+                            onClick={() => navigate('/my-baskets')}
                             className="flex items-center gap-2 hover:text-purple-400 transition-colors">
                                 <ArrowLeft className="w-5 h-5" />
                                 Back to Portfolio

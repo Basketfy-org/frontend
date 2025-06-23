@@ -50,7 +50,17 @@ const ConfirmTransaction = ({ darkMode }) => {
           <>
             <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} mb-6`}>
               <div className="text-center mb-4">
-                <div className="text-3xl mb-2">{selectedBasket.basketData.image}</div>
+              
+                <div className="mb-2">
+                                        <img
+                                            src={selectedBasket.basketData.image || 'https://i.ibb.co/7J52Ldr7/basket-svgrepo-com.png'}
+                                            alt="Basket"
+                                            className="w-12 h-12 rounded-full object-cover"
+                                            onError={(e) => {
+                                                e.target.src = 'https://i.ibb.co/7J52Ldr7/basket-svgrepo-com.png';
+                                            }}
+                                        />
+                                    </div>
                 <h3 className="text-lg font-semibold">{selectedBasket.basketData.basketName}</h3>
               </div>
 

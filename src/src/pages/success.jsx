@@ -41,7 +41,17 @@ const SuccessPage = ({ darkMode }) => {
             <p className="text-lg mb-6">You now own the <span className="font-semibold text-purple-400">{basketDetails?.basketData.basketName}</span>!</p>
 
             <div className={`p-6 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} mb-6`}>
-                <div className="text-3xl mb-2">{basketDetails?.basketData.image}</div>
+
+                 <div className="mb-2" >
+                                        <img
+                                            src={basketDetails?.basketData.image || 'https://i.ibb.co/7J52Ldr7/basket-svgrepo-com.png'}
+                                            alt="Basket"
+                                            className="w-12 h-12 rounded-full object-cover"
+                                            onError={(e) => {
+                                                e.target.src = 'https://i.ibb.co/7J52Ldr7/basket-svgrepo-com.png';
+                                            }}
+                                        />
+                                    </div>
                 <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                         <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>bToken Balance:</span>
@@ -56,7 +66,7 @@ const SuccessPage = ({ darkMode }) => {
 
             <div className="space-y-3">
                 <button
-                    onClick={() => navigate('/portfolio')} // Go to portfolio page
+                    onClick={() => navigate('/my-baskets')} // Go to portfolio page
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300"
                 >
                     View Portfolio
