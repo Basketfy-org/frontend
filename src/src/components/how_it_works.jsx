@@ -13,6 +13,14 @@ import {
   CheckCircle2,
   Cpu,
   TrendingUp,
+  Users,
+  Crown,
+  Target,
+  BarChart3,
+  UserPlus,
+  Bell,
+  Coins,
+  PieChart,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -115,12 +123,123 @@ const rebalanceSteps = [
   },
 ];
 
-const Section = ({ darkMode, title, steps }) => {
+// New Farmer Flow Steps
+const becomeFarmerSteps = [
+  {
+    title: (
+      <>
+        Setup Profile <span role="img" aria-label="profile">👤</span>
+      </>
+    ),
+    description:
+      "Create your farmer profile with expertise areas, bio, and fee structure (management & performance fees).",
+    icon: <Crown className="w-8 h-8 text-green-500" aria-hidden="true" />,
+  },
+  {
+    title: (
+      <>
+        Create Strategy <span role="img" aria-label="strategy">🎯</span>
+      </>
+    ),
+    description:
+      "Define your thematic basket with token allocation, deploy via factory contract, and publish metadata.",
+    icon: <Target className="w-8 h-8 text-green-500" aria-hidden="true" />,
+  },
+  {
+    title: (
+      <>
+        Build Following <span role="img" aria-label="following">📈</span>
+      </>
+    ),
+    description:
+      "Market your basket, gain subscribers, and earn recurring income from management and performance fees.",
+    icon: <BarChart3 className="w-8 h-8 text-green-500" aria-hidden="true" />,
+  },
+];
+
+const followFarmerSteps = [
+  {
+    title: (
+      <>
+        Discover Farmers <span role="img" aria-label="discover">🔍</span>
+      </>
+    ),
+    description:
+      "Browse farmers by performance track record, expertise, themes, and subscriber count in the marketplace.",
+    icon: <UserPlus className="w-8 h-8 text-blue-500" aria-hidden="true" />,
+  },
+  {
+    title: (
+      <>
+        Subscribe & Invest <span role="img" aria-label="subscribe">💰</span>
+      </>
+    ),
+    description:
+      "Deposit USDC/ETH to subscribe to a farmer's basket and receive cTokens representing your ownership share.",
+    icon: <Coins className="w-8 h-8 text-blue-500" aria-hidden="true" />,
+  },
+  {
+    title: (
+      <>
+        Auto-Sync Portfolio <span role="img" aria-label="sync">🔄</span>
+      </>
+    ),
+    description:
+      "When your farmer rebalances, your portfolio automatically mirrors their changes. Get notifications and track performance.",
+    icon: <Bell className="w-8 h-8 text-blue-500" aria-hidden="true" />,
+  },
+];
+
+const farmerManagementSteps = [
+  {
+    title: (
+      <>
+        Rebalance Strategy <span role="img" aria-label="rebalance">⚖️</span>
+      </>
+    ),
+    description:
+      "Update your basket allocation (e.g., swap 10% ETH → 10% AVAX) and subscribers automatically mirror changes.",
+    icon: <PieChart className="w-8 h-8 text-orange-500" aria-hidden="true" />,
+  },
+  {
+    title: (
+      <>
+        Earn Fees <span role="img" aria-label="earn">💸</span>
+      </>
+    ),
+    description:
+      "Earn management fees (recurring % AUM) and performance fees (% of profits) from your subscriber base.",
+    icon: <DollarSign className="w-8 h-8 text-orange-500" aria-hidden="true" />,
+  },
+  {
+    title: (
+      <>
+        Track Performance <span role="img" aria-label="track">📊</span>
+      </>
+    ),
+    description:
+      "Monitor earnings, subscriber growth, basket performance, and build reputation through consistent results.",
+    icon: <TrendingUp className="w-8 h-8 text-orange-500" aria-hidden="true" />,
+  },
+];
+
+const Section = ({ darkMode, title, steps, bgColor = "gray" }) => {
+  const getBgColors = () => {
+    switch (bgColor) {
+      case "green":
+        return darkMode ? "bg-green-900/20" : "bg-green-50";
+      case "blue":
+        return darkMode ? "bg-blue-900/20" : "bg-blue-50";
+      case "orange":
+        return darkMode ? "bg-orange-900/20" : "bg-orange-50";
+      default:
+        return darkMode ? "bg-gray-800" : "bg-gray-50";
+    }
+  };
+
   return (
     <section
-      className={`w-full max-w-7xl mx-auto mb-20 p-6 rounded-xl ${
-        darkMode ? "bg-gray-800" : "bg-gray-50"
-      }`}
+      className={`w-full max-w-7xl mx-auto mb-20 p-6 rounded-xl ${getBgColors()}`}
       aria-label={title}
     >
       <h2
@@ -175,10 +294,18 @@ const HowItWorks = ({ darkMode }) => {
         darkMode ? "bg-gray-900 text-gray-200" : "bg-white text-gray-900"
       }`}
     >
-      <h1 className="text-5xl font-extrabold text-center mb-16">
+      <h1 className="text-5xl font-extrabold text-center mb-8">
         How Basketfy Works
       </h1>
+      
+      <p className={`text-xl text-center mb-16 max-w-4xl mx-auto ${
+        darkMode ? "text-gray-300" : "text-gray-600"
+      }`}>
+        Whether you want to create your own baskets, follow expert farmers, or become a farmer yourself - 
+        Basketfy offers multiple paths to diversified crypto investing.
+      </p>
 
+      {/* Original Flows */}
       <Section
         darkMode={darkMode}
         title={
@@ -207,6 +334,54 @@ const HowItWorks = ({ darkMode }) => {
           </>
         }
         steps={rebalanceSteps}
+      />
+
+      {/* Social Investing Section Header */}
+      <div className="max-w-7xl mx-auto mb-12 text-center">
+        <h2 className={`text-4xl font-bold mb-4 ${
+          darkMode ? "text-white" : "text-gray-900"
+        }`}>
+          🆕 Social Investing Features
+        </h2>
+        <p className={`text-lg ${
+          darkMode ? "text-gray-300" : "text-gray-600"
+        }`}>
+          Follow expert farmers or become one yourself to earn from your crypto expertise
+        </p>
+      </div>
+
+      {/* New Farmer Flows */}
+      <Section
+        darkMode={darkMode}
+        title={
+          <>
+            Become a Farmer <span role="img" aria-label="farmer">🧑‍🌾</span>
+          </>
+        }
+        steps={becomeFarmerSteps}
+        bgColor="green"
+      />
+
+      <Section
+        darkMode={darkMode}
+        title={
+          <>
+            Follow Expert Farmers <span role="img" aria-label="follow">👥</span>
+          </>
+        }
+        steps={followFarmerSteps}
+        bgColor="blue"
+      />
+
+      <Section
+        darkMode={darkMode}
+        title={
+          <>
+            Manage Your Farm <span role="img" aria-label="manage">🎯</span>
+          </>
+        }
+        steps={farmerManagementSteps}
+        bgColor="orange"
       />
 
       <div className="max-w-7xl mx-auto flex justify-center">

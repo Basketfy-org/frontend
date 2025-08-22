@@ -12,7 +12,7 @@ import { useWallet } from '../hook/wallet';
 import toast from 'react-hot-toast';
 
 
-const WalletModal = ({ showWalletModal, setShowWalletModal, darkMode}) => {
+const WalletModal = ({ showWalletModal, setShowWalletModal, darkMode }) => {
   const {
     connectWallet,
     disconnectWallet,
@@ -25,34 +25,30 @@ const WalletModal = ({ showWalletModal, setShowWalletModal, darkMode}) => {
   const [error, setError] = useState('');
 
   const wallets = [
-    { name: 'Phantom', icon: '👻', adapter: 'phantom' },
-    { name: 'Solflare', icon: '☀️', adapter: 'solflare' },
-    { name: 'Backpack', icon: '🎒', adapter: 'backpack' },
-    { name: 'Coinbase Wallet', icon: '🔵', adapter: 'coinbase' }
+    { name: 'Phantom', icon: './src/assets/ghost.png', adapter: 'phantom' },
+    { name: 'Metamask', icon: './src/assets/metamask.png', adapter: 'metamask' },
+    // { name: 'Backpack', icon: '🎒', adapter: 'backpack' },
+    //{ name: 'Coinbase Wallet', icon: '🔵', adapter: 'coinbase' }
   ];
 
 
 
-const handleConnect = async (walletType) => {
-  setError('');
+  const handleConnect = async (walletType) => {
+    setError('');
 
-  const result = await toast.promise(
-    connectWallet(walletType),
-    {
-      loading: 'Connecting wallet...',
-      success: 'Wallet connected!',
-      error: 'Failed to connect wallet.',
+    const result = await
+      connectWallet(walletType)
+
+    if (result.success) {
+         setShowWalletModal(false);
+       toast.success("Wallet Connected");
+   
+    } else {
+      setError(result.error);
+      // Optional: show the specific error too
+      toast.error(result.error);
     }
-  );
-
-  if (result.success) {
-    setShowWalletModal(false);
-  } else {
-    setError(result.error);
-    // Optional: show the specific error too
-    toast.error(result.error);
-  }
-};
+  };
 
   const handleDisconnect = async () => {
     await disconnectWallet();
@@ -66,7 +62,7 @@ const handleConnect = async (walletType) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 max-w-sm w-full mx-4`}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">
+          <h3 className={`${darkMode ? ' text-white' : 'text-gray-900'} text-lg font-semibold`}>
             {connected ? 'Wallet Connected' : 'Connect Wallet'}
           </h3>
           <button
@@ -115,10 +111,9 @@ const handleConnect = async (walletType) => {
                 className={`w-full flex items-center gap-3 p-3 rounded-lg border ${darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-300 hover:bg-gray-50'
                   } transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                <div className="w-8 h-8 flex items-center justify-center text-lg">
-                  {wallet.icon}
-                </div>
-                <span className="flex-1 text-left">{wallet.name}</span>
+                <img src={wallet.icon} className="w-8 h-8 flex items-center justify-center text-lg" />
+
+                <span className={` ${darkMode ? 'text-white' : 'text-gray-900'} flex-1 text-left font-thin`}>{wallet.name}</span>
                 {connecting && <Loader2 className="animate-spin" size={16} />}
               </button>
             ))}

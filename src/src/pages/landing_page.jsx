@@ -13,7 +13,9 @@ import {
     Coins,
     ArrowRight,
     ChevronDown,
-    ShoppingBasket
+    ShoppingBasket,
+    Sparkles,
+    Zap
 
 } from 'lucide-react';
 
@@ -45,7 +47,8 @@ export const LandingPage = ({
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
     const [shouldNavigateAfterConnect, setShouldNavigateAfterConnect] = useState(false);
-
+    const year = new Date().getFullYear();
+    const [currentOffering, setCurrentOffering] = useState(0);
     // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -65,7 +68,27 @@ export const LandingPage = ({
         }
     }, [walletConnected, shouldNavigateAfterConnect, navigate]);
 
+    const offerings = [
+        "AI-powered rebalancing",
+        "One-click diversification",
+        "Social trading features",
+        "DeFi-native infrastructure"
+    ];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentOffering((prev) => (prev + 1) % offerings.length);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
+
     return (<div className={`max-w-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-black' : 'bg-gradient-to-br from-white via-purple-50 to-gray-100'} ${darkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className={`absolute -top-40 -right-40 w-80 h-80 ${darkMode ? 'bg-purple-500' : 'bg-purple-200'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse`}></div>
+            <div className={`absolute -bottom-40 -left-40 w-80 h-80 ${darkMode ? 'bg-pink-500' : 'bg-pink-200'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse`} style={{ animationDelay: '2s' }}></div>
+            <div className={`absolute top-40 left-1/2 w-80 h-80 ${darkMode ? 'bg-blue-500' : 'bg-blue-200'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse`} style={{ animationDelay: '4s' }}></div>
+        </div>
         {/* Header */}
         <header className="flex justify-between items-center p-6 relative z-10">
             <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -96,13 +119,13 @@ export const LandingPage = ({
                                 <li>
                                     <button
                                         onClick={() => {
-                                            navigate("/create");
+                                            navigate("/explore");
 
                                             setIsDropdownOpen(false);
                                         }}
                                         className="w-full text-left px-3 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-700 transition-colors"
                                     >
-                                        Create Basket
+                                        Explore Baskets
                                     </button>
                                 </li>
                                 <li>
@@ -113,8 +136,15 @@ export const LandingPage = ({
                                                 setShowWalletModal(true);
                                                 setShouldNavigateAfterConnect(true);
                                             } else {
-                                                navigate("/my-baskets");
-                                                setIsDropdownOpen(false);
+                                                if (isCurator) {
+                                                    navigate("/curator-dashboard");
+
+                                                    setIsDropdownOpen(false);
+                                                } else {
+                                                    navigate("/my-baskets");
+                                                    setIsDropdownOpen(false);
+                                                }
+
                                             }
 
                                         }}
@@ -135,15 +165,77 @@ export const LandingPage = ({
         {/* Hero Section */}
         <section className="text-center py-20 px-6">
             <div className="max-w-4xl mx-auto">
-                <h1 className="text-6xl font-extrabold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent leading-tight">
-                    The DeFi-Native ETF Platform
-                </h1>
+                {/* Enhanced Background Effects */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    {/* Animated Orbs */}
+                    <div className={`absolute -top-40 -right-40 w-96 h-96 ${darkMode ? 'bg-purple-500' : 'bg-purple-200'} rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse`}></div>
+                    <div className={`absolute -bottom-40 -left-40 w-96 h-96 ${darkMode ? 'bg-pink-500' : 'bg-pink-200'} rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse`} style={{ animationDelay: '2s' }}></div>
+                    <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 ${darkMode ? 'bg-blue-500' : 'bg-blue-200'} rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse`} style={{ animationDelay: '4s' }}></div>
 
+                    {/* Grid Pattern */}
+                    <div className={`absolute inset-0 ${darkMode ? 'bg-gray-800/10' : 'bg-gray-200/20'}`}
+                        style={{
+                            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)',
+                            backgroundSize: '50px 50px'
+                        }}>
+                    </div>
 
-                <p className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-8 max-w-3xl mx-auto leading-relaxed`}>
-                    Create, manage, and trade baskets of tokens representing themes like AI, DeFi blue chips, and Solana ecosystem.
-                    Simplified diversified investing powered by smart contracts and OKX DEX integration.
+                    {/* Floating Elements */}
+                    <div className="absolute top-20 left-1/4 animate-bounce" style={{ animationDelay: '1s', animationDuration: '3s' }}>
+                        <div className={`w-8 h-8 ${darkMode ? 'bg-purple-400/20' : 'bg-purple-300/40'} rounded-full backdrop-blur-sm`}></div>
+                    </div>
+                    <div className="absolute top-1/3 right-1/4 animate-bounce" style={{ animationDelay: '2s', animationDuration: '4s' }}>
+                        <div className={`w-6 h-6 ${darkMode ? 'bg-pink-400/20' : 'bg-pink-300/40'} rounded-full backdrop-blur-sm`}></div>
+                    </div>
+                    <div className="absolute bottom-1/3 left-1/3 animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '3.5s' }}>
+                        <div className={`w-4 h-4 ${darkMode ? 'bg-blue-400/20' : 'bg-blue-300/40'} rounded-full backdrop-blur-sm`}></div>
+                    </div>
+                </div>
+                {/* Badge */}
+                <div className={`inline-flex items-center gap-3 px-6 py-3 rounded-full ${darkMode ? 'bg-purple-500/20 text-purple-200 border-purple-400/30' : 'bg-purple-100 text-purple-700 border-purple-300'} border backdrop-blur-md mb-8 font-medium shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer`}>
+                    <Sparkles className="w-5 h-5 animate-pulse" />
+                    <span className="text-sm font-semibold tracking-wide">DeFi's First Native ETF Platform</span>
+                    <Zap className="w-5 h-5 animate-pulse" style={{ animationDelay: '1s' }} />
+                </div>
+
+                {/* Enhanced Main Headlines */}
+                <div className="mb-8 space-y-2">
+                    <h1 className="text-6xl md:text-8xl lg:text-9xl font-black leading-none tracking-tight">
+                        <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
+                            Crypto For
+                        </span>
+                        <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent transform hover:scale-105 transition-transform duration-500">
+                            Anybody
+                        </span>
+                    </h1>
+
+                    {/* Dynamic Feature Showcase */}
+                    <div className="h-12 flex items-center justify-center mt-6">
+                        <div className={`text-xl md:text-2xl font-medium ${darkMode ? 'text-purple-300' : 'text-purple-600'} transition-all duration-500`}>
+                            {offerings[currentOffering]}
+                        </div>
+                    </div>
+                </div>
+                <p className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-6 max-w-3xl mx-auto leading-relaxed`}>
+                    Want to invest in crypto but not sure where to start? <br />
+                    Don’t stress about what to buy or where to buy it—just <span className="font-semibold">buy a basket.</span>
                 </p>
+
+                <div className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-8 max-w-3xl mx-auto leading-relaxed`}>
+                    <h2 className="text-2xl font-bold mb-4">With baskets, you can:</h2>
+                    <ul className="list-disc list-inside space-y-2">
+                        <li>Invest in themes like <span className="font-semibold">AI</span>, <span className="font-semibold">DeFi blue chips</span>, or the <span className="font-semibold">Solana ecosystem</span>.</li>
+                        <li>Follow expert farmers who curate and rebalance portfolios for you.</li>
+                        <li>Create your own strategies with automated rebalancing and social trading features.</li>
+                    </ul>
+                </div>
+
+                <p className={`text-xl font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'} max-w-2xl mx-auto mb-12`}>
+                    Crypto made <span className="font-semibold">simple</span>, <span className="font-semibold">thematic</span>, and <span className="font-semibold">social</span>.
+                </p>
+
+
+
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
                     <button
                         onClick={async () => {
@@ -286,15 +378,15 @@ export const LandingPage = ({
                             }}
                         >
                             <div className="mb-2">
-                                        <img
-                                            src={basket.image || 'https://i.ibb.co/7J52Ldr7/basket-svgrepo-com.png'}
-                                            alt="Basket"
-                                            className="w-12 h-12 rounded-full object-cover"
-                                            onError={(e) => {
-                                                e.target.src = 'https://i.ibb.co/7J52Ldr7/basket-svgrepo-com.png';
-                                            }}
-                                        />
-                                    </div>
+                                <img
+                                    src={basket.image || 'https://i.ibb.co/7J52Ldr7/basket-svgrepo-com.png'}
+                                    alt="Basket"
+                                    className="w-12 h-12 rounded-full object-cover"
+                                    onError={(e) => {
+                                        e.target.src = 'https://i.ibb.co/7J52Ldr7/basket-svgrepo-com.png';
+                                    }}
+                                />
+                            </div>
                             <h3 className="text-2xl font-semibold mb-3">{basket.name}</h3>
                             <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4 leading-relaxed`}>{basket.description}</p>
                             <div className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm mb-4`}>
@@ -326,7 +418,7 @@ export const LandingPage = ({
             <div className="text-center max-w-4xl mx-auto">
                 <h2 className="text-4xl font-bold mb-6">Ready to Build Your First Basket?</h2>
                 <p className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-8`}>
-                    Join thousands of users creating and trading themed crypto baskets on Solana
+                    Join thousands of users creating and trading themed crypto baskets
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
@@ -358,8 +450,9 @@ export const LandingPage = ({
                             Basketfy
                         </div>
                         <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-6 leading-relaxed`}>
-                            The DeFi-native ETF platform. Create, manage, and trade baskets of tokens with smart contracts on Solana.
+                            The DeFi-native ETF platform. Create, manage, and trade baskets of tokens with smart contracts.
                         </p>
+
                         <div className="flex gap-4">
                             <button className={`${darkMode ? 'text-gray-400 hover:text-purple-400' : 'text-gray-600 hover:text-purple-600'} transition-colors`}>
                                 <Twitter className="w-5 h-5" />
@@ -419,7 +512,7 @@ export const LandingPage = ({
                 <div className={`border-t ${darkMode ? 'border-gray-800' : 'border-gray-200'} pt-8`}>
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
-                            © 2024 Basketfy. All rights reserved. Built on Solana.
+                            © {year} Basketfy. All rights reserved.
                         </div>
                         <div className="flex items-center gap-6 text-sm">
                             <button className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors`}>
@@ -428,10 +521,10 @@ export const LandingPage = ({
                             <button className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors`}>
                                 Terms of Service
                             </button>
-                            <div className="flex items-center gap-2">
+                            {/* <div className="flex items-center gap-2">
                                 <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Powered by</span>
                                 <span className="text-purple-400 font-semibold">OKX DEX</span>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 </div>

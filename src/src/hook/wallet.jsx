@@ -95,9 +95,8 @@ export const WalletProvider = ({ children }) => {
       switch (type) {
         case 'phantom':
           if (!window.solana?.isPhantom) {
-
-            toast.error('Phantom Wallet not found. Please install Phantom.');
-            return;
+         
+        return { success: false, error: 'Phantom Wallet not found. Please install Phantom.'};
           }
           walletAdapter = window.solana;
           response = skipPrompt
@@ -105,46 +104,33 @@ export const WalletProvider = ({ children }) => {
             : await walletAdapter.connect();
           break;
 
-        case 'solflare':
-          if (!window.solflare?.isSolflare) {
+        case 'metamask':
+          if (!window.ethereum?.isMetaMask) {
 
-            toast.error('Solflare Wallet not found. Please install Solflare.');
-            return;
+            return { success: false, error: 'MetaMask Wallet not found. Please install MetaMask.' };
           }
-          walletAdapter = window.solflare;
-          response = skipPrompt
-            ? await walletAdapter.connect({ onlyIfTrusted: true })
-            : await walletAdapter.connect();
+          walletAdapter = window.ethereum;
+
+
+          if (skipPrompt) {
+            // Check if already connected
+            const accounts = await walletAdapter.request({ method: 'eth_accounts' });
+            if (accounts.length === 0) {
+
+              return { success: false, error: 'MetaMask not connected. Please connect manually first.' };
+            }
+            response = { publicKey: { toString: () => accounts[0] } };
+          } else {
+            const accounts = await walletAdapter.request({ method: 'eth_requestAccounts' });
+            response = { publicKey: { toString: () => accounts[0] } };
+          }
           break;
 
-        case 'backpack':
-          if (!window.backpack) {
 
-            toast.error('Backpack Wallet not found. Please install Backpack.');
-            return;
-          }
-          walletAdapter = window.backpack;
-          response = skipPrompt
-            ? await walletAdapter.connect({ onlyIfTrusted: true })
-            : await walletAdapter.connect();
-          break;
-
-        case 'coinbase':
-          if (!window.coinbaseSolana) {
-
-            toast.error('Coinbase Wallet not found. Please install Coinbase Wallet.');
-            return;
-          }
-          walletAdapter = window.coinbaseSolana;
-          response = skipPrompt
-            ? await walletAdapter.connect({ onlyIfTrusted: true })
-            : await walletAdapter.connect();
-          break;
 
         default:
 
-          toast.error('Unsupported wallet type');
-          return
+          return { success: false, error: "unsupported wallet type" };
       }
 
       if (response?.publicKey) {
@@ -168,7 +154,6 @@ export const WalletProvider = ({ children }) => {
         return { success: true, address };
       }
     } catch (error) {
-
       logger(`Wallet connection error: ${error.message}`);
       return { success: false, error: error.message };
     } finally {

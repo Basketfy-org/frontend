@@ -34,15 +34,16 @@ import WalletModal from './src/modal/wallet_modal';
 import ExplorePage from './src/pages/explore';
 import BasketDetailPage from './src/pages/basket/details';
 import ConfirmTransaction from './src/pages/transactions/confirm_tx';
-import PortfolioPage from './src/pages/portfolio/overview';
+import PortfolioPage from './src/pages/buyers/overview';
 import CreateBasketPage from './src/pages/basket/create';
-import SuccessPage from './src/pages/success';
+import SuccessPage from './src/components/success';
 import { getBaskets } from './src/api/basketApi';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import CreateSuccessPage from './src/pages/basket/create_success';
 import HowItWorks from './src/components/how_it_works';
 import logger from './src/uutils/logger';
-import UserBasketPage from './src/pages/portfolio/user_basket_detail';
+import UserBasketPage from './src/pages/buyers/basket_detail';
+import CuratorDashboard from './src/pages/curator/dashboard';
 
 
 
@@ -113,7 +114,7 @@ const features = [
   {
     icon: <Shield className="w-8 h-8" />,
     title: "Smart Contract Security",
-    description: "Built on Solana with audited contracts managing basket creation, minting, and redemption"
+    description: "Audited contracts managing basket creation, minting, and redemption"
   },
   {
     icon: <BarChart3 className="w-8 h-8" />,
@@ -122,8 +123,8 @@ const features = [
   },
   {
     icon: <Globe className="w-8 h-8" />,
-    title: "OKX DEX Integration",
-    description: "Seamless swaps and liquidity through OKX DEX API for optimal price execution"
+    title: "Multi DEX Integration",
+    description: "Seamless swaps and liquidity through Multi DEX API for optimal price execution"
   }
 ];
 
@@ -135,7 +136,6 @@ const stats = [
 ];
 
 const App = () => {
-
 
   const [baskets, setBaskets] = useState([]);
   const [selectedBasket, setSelectedBasket] = useState(null);
@@ -286,6 +286,13 @@ const App = () => {
           } />
           <Route path="/user-basket-portfolio" element={
             <UserBasketPage
+              darkMode={darkMode}
+
+            />
+          } />
+
+           <Route path="/curator-dashboard" element={
+            <CuratorDashboard
               darkMode={darkMode}
 
             />
