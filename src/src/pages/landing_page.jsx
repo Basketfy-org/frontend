@@ -69,16 +69,16 @@ export const LandingPage = ({
     }, [walletConnected, shouldNavigateAfterConnect, navigate]);
 
     const offerings = [
-        "AI-powered rebalancing",
+        "Agentic-AI rebalancing",
         "One-click diversification",
-        "Social trading features",
+        "Social trading features on Coral MCP",
         "DeFi-native infrastructure"
     ];
 
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentOffering((prev) => (prev + 1) % offerings.length);
-        }, 3000);
+        }, 1000);
         return () => clearInterval(interval);
     }, []);
 
