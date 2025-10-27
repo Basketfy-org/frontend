@@ -1,37 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import {
   TrendingUp,
-  TrendingDown,
   Users,
   Zap,
   Shield,
   Globe,
-  ChevronRight,
-  Twitter,
-  Github,
-  MessageCircle,
-  Mail,
-  ExternalLink,
   DollarSign,
   BarChart3,
-  Coins,
   Target,
-  ArrowRight,
-  ArrowLeft,
-  Search,
-  Wallet,
-  X,
-  Plus,
-  Minus,
-  // Missing imports that are used in your components:
-  Share2,      // Used in BasketDetailPage and SuccessPage
-  Check,       // Used in ConfirmTransaction and SuccessPage  
   Loader2      // Used in ConfirmTransaction and CreateBasketPage
 } from 'lucide-react';
 import './App.css';
 import LandingPage from './src/pages/landing_page';
 import WalletModal from './src/modal/wallet_modal';
-import ExplorePage from './src/pages/explore';
 import BasketDetailPage from './src/pages/basket/details';
 import ConfirmTransaction from './src/pages/transactions/confirm_tx';
 import PortfolioPage from './src/pages/buyers/overview';
@@ -44,7 +25,12 @@ import HowItWorks from './src/components/how_it_works';
 import logger from './src/uutils/logger';
 import UserBasketPage from './src/pages/buyers/basket_detail';
 import CuratorDashboard from './src/pages/curator/dashboard';
-
+import { useSelector, useDispatch } from 'react-redux';
+import { toggleDarkMode } from '@/src/store/store';
+import MarketPage from './src/pages/market';
+import LoginPage from './src/pages/buyers/login';
+import RegisterPage from './src/pages/buyers/register';
+import ProfilePage from './src/pages/buyers/profile';
 
 
 
@@ -128,7 +114,7 @@ const features = [
   }
 ];
 
-const stats = [
+export const stats = [
   { label: "Total Value Locked", value: "$0.00M", icon: <DollarSign className="w-5 h-5" /> },
   { label: "Active Baskets", value: "0", icon: <Target className="w-5 h-5" /> },
   { label: "Total Holders", value: "0.02K", icon: <Users className="w-5 h-5" /> },
@@ -147,7 +133,8 @@ const App = () => {
   const [darkMode, setDarkMode] = useState(true);
   const [loading, setLoading] = useState(false);
 
-
+  const dispatch = useDispatch();
+  const isDarkMode = useSelector((state) => state.global.isDarkMode);
   const filteredBaskets = baskets.filter(basket => {
     const matchesSearch = basket.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       basket.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -174,7 +161,7 @@ const App = () => {
 
         // Check if response exists and has data property
         if (response && response.result && Array.isArray(response.result)) {
-          console.log("response.data", response.result);
+          //console.log("response.data", response.result);
           logger(`Fetched Baskets: ${response.result.length}`);
           setBaskets(response.result);
           stats[1].value = response.result.length;
@@ -219,8 +206,8 @@ const App = () => {
         <Routes> {/* Define your routes here */}
           <Route path="/" element={
             <LandingPage
-              darkMode={darkMode}
-              setDarkMode={setDarkMode}
+              darkMode={isDarkMode}
+              setDarkMode={() => dispatch(toggleDarkMode())}
               baskets={baskets} // Consider using `baskets` state after fetching
               stats={stats}
               features={features}
@@ -228,9 +215,9 @@ const App = () => {
               showWalletModal={showWalletModal}
             />
           } />
-          <Route path="/explore" element={
-            <ExplorePage
-              darkMode={darkMode}
+          <Route path="/market" element={
+            <MarketPage
+              darkMode={isDarkMode}
               setBaskets={setBaskets}
               setLoading={setLoading}
               loading={loading}
@@ -248,7 +235,7 @@ const App = () => {
           {/* Use URL parameters for detail pages, e.g., /baskets/:id or /baskets/:symbol */}
           <Route path="/basket/:id" element={
             <BasketDetailPage
-              darkMode={darkMode}
+              darkMode={isDarkMode}
               selectedBasket={selectedBasket} // Ensure this is set when navigating to detail
               setShowWalletModal={setShowWalletModal}
 
@@ -256,50 +243,66 @@ const App = () => {
           } />
           <Route path="/confirm" element={
             <ConfirmTransaction
-              darkMode={darkMode}
+              darkMode={isDarkMode}
             />
           } />
           <Route path="/buy-success" element={
             <SuccessPage
-              darkMode={darkMode}
+              darkMode={isDarkMode}
             />
           } />
           {/* Route for CreateBasketPage */}
           <Route path="/create" element={
             <CreateBasketPage
-              darkMode={darkMode}
+              darkMode={isDarkMode}
               setShowWalletModal={setShowWalletModal}
             />
           } />
           {/* Route for CreateSuccessPage, will receive state via navigate */}
           <Route path="/create-success" element={
             <CreateSuccessPage
-              darkMode={darkMode}
+              darkMode={isDarkMode}
             />
           } />
           <Route path="/my-baskets" element={
             <PortfolioPage
-              darkMode={darkMode}
+              darkMode={isDarkMode}
               filteredBaskets={baskets}
 
             />
           } />
           <Route path="/user-basket-portfolio" element={
             <UserBasketPage
-              darkMode={darkMode}
+              darkMode={isDarkMode}
 
             />
           } />
 
-           <Route path="/curator-dashboard" element={
+          <Route path="/curator-dashboard" element={
             <CuratorDashboard
-              darkMode={darkMode}
+              darkMode={isDarkMode}
 
             />
           } />
           <Route path="/how-it-works" element={
             <HowItWorks
-              darkMode={darkMode}
+              darkMode={isDarkMode}
+            />
+          } />
+           <Route path="/login" element={
+            <LoginPage
+              darkMode={isDarkMode}
+            />
+          } />
+           <Route path="/register" element={
+            <RegisterPage
+              darkMode={isDarkMode}
+            />
+          } />
+
+           <Route path="/profile" element={
+            <ProfilePage
+              darkMode={isDarkMode}
             />
           } />
         </Routes>
@@ -307,7 +310,7 @@ const App = () => {
         {/* WalletModal should remain outside of Routes if it's a global modal */}
         <WalletModal
           showWalletModal={showWalletModal}
-          darkMode={darkMode}
+          darkMode={isDarkMode}
           setShowWalletModal={setShowWalletModal}
         />
       </>

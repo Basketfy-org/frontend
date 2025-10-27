@@ -83,12 +83,7 @@ export const LandingPage = ({
     }, []);
 
     return (<div className={`max-w-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-black' : 'bg-gradient-to-br from-white via-purple-50 to-gray-100'} ${darkMode ? 'text-white' : 'text-gray-900'} transition-colors duration-300`}>
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className={`absolute -top-40 -right-40 w-80 h-80 ${darkMode ? 'bg-purple-500' : 'bg-purple-200'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse`}></div>
-            <div className={`absolute -bottom-40 -left-40 w-80 h-80 ${darkMode ? 'bg-pink-500' : 'bg-pink-200'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse`} style={{ animationDelay: '2s' }}></div>
-            <div className={`absolute top-40 left-1/2 w-80 h-80 ${darkMode ? 'bg-blue-500' : 'bg-blue-200'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse`} style={{ animationDelay: '4s' }}></div>
-        </div>
+
         {/* Header */}
         <header className="flex justify-between items-center p-6 relative z-10">
             <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -119,7 +114,7 @@ export const LandingPage = ({
                                 <li>
                                     <button
                                         onClick={() => {
-                                            navigate("/explore");
+                                            navigate("/market");
 
                                             setIsDropdownOpen(false);
                                         }}
@@ -132,26 +127,26 @@ export const LandingPage = ({
                                     <button
 
                                         onClick={() => {
-                                            if (!walletConnected) {
-                                                setShowWalletModal(true);
-                                                setShouldNavigateAfterConnect(true);
-                                            } else {
-                                                if (isCurator) {
-                                                    navigate("/curator-dashboard");
+                                            // if (!walletConnected) {
+                                            //     setShowWalletModal(true);
+                                            //     setShouldNavigateAfterConnect(true);
+                                            // } else {
+                                            //     if (isCurator) {
+                                            //         navigate("/curator-dashboard");
 
-                                                    setIsDropdownOpen(false);
-                                                } else {
-                                                    navigate("/my-baskets");
-                                                    setIsDropdownOpen(false);
-                                                }
+                                            //         setIsDropdownOpen(false);
+                                            //     } else {
+                                            navigate("/login");
+                                            setIsDropdownOpen(false);
+                                            // }
 
-                                            }
+                                            //}
 
                                         }}
 
                                         className="w-full text-left px-3 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-700 transition-colors"
                                     >
-                                        My Baskets
+                                        Login
                                     </button>
                                 </li>
                             </ul>
@@ -168,9 +163,6 @@ export const LandingPage = ({
                 {/* Enhanced Background Effects */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     {/* Animated Orbs */}
-                    <div className={`absolute -top-40 -right-40 w-96 h-96 ${darkMode ? 'bg-purple-500' : 'bg-purple-200'} rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse`}></div>
-                    <div className={`absolute -bottom-40 -left-40 w-96 h-96 ${darkMode ? 'bg-pink-500' : 'bg-pink-200'} rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse`} style={{ animationDelay: '2s' }}></div>
-                    <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 ${darkMode ? 'bg-blue-500' : 'bg-blue-200'} rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse`} style={{ animationDelay: '4s' }}></div>
 
                     {/* Grid Pattern */}
                     <div className={`absolute inset-0 ${darkMode ? 'bg-gray-800/10' : 'bg-gray-200/20'}`}
@@ -181,7 +173,7 @@ export const LandingPage = ({
                     </div>
 
                     {/* Floating Elements */}
-                    <div className="absolute top-20 left-1/4 animate-bounce" style={{ animationDelay: '1s', animationDuration: '3s' }}>
+                    {/* <div className="absolute top-20 left-1/4 animate-bounce" style={{ animationDelay: '1s', animationDuration: '3s' }}>
                         <div className={`w-8 h-8 ${darkMode ? 'bg-purple-400/20' : 'bg-purple-300/40'} rounded-full backdrop-blur-sm`}></div>
                     </div>
                     <div className="absolute top-1/3 right-1/4 animate-bounce" style={{ animationDelay: '2s', animationDuration: '4s' }}>
@@ -189,7 +181,7 @@ export const LandingPage = ({
                     </div>
                     <div className="absolute bottom-1/3 left-1/3 animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '3.5s' }}>
                         <div className={`w-4 h-4 ${darkMode ? 'bg-blue-400/20' : 'bg-blue-300/40'} rounded-full backdrop-blur-sm`}></div>
-                    </div>
+                    </div> */}
                 </div>
                 {/* Badge */}
                 <div className={`inline-flex items-center gap-3 px-6 py-3 rounded-full ${darkMode ? 'bg-purple-500/20 text-purple-200 border-purple-400/30' : 'bg-purple-100 text-purple-700 border-purple-300'} border backdrop-blur-md mb-8 font-medium shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer`}>
@@ -221,18 +213,6 @@ export const LandingPage = ({
                     Don’t stress about what to buy or where to buy it—just <span className="font-semibold">buy a basket.</span>
                 </p>
 
-                <div className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-8 max-w-3xl mx-auto leading-relaxed`}>
-                    <h2 className="text-2xl font-bold mb-4">With baskets, you can:</h2>
-                    <ul className="list-disc list-inside space-y-2">
-                        <li>Invest in themes like <span className="font-semibold">AI</span>, <span className="font-semibold">DeFi blue chips</span>, or the <span className="font-semibold">Solana ecosystem</span>.</li>
-                        <li>Follow expert farmers who curate and rebalance portfolios for you.</li>
-                        <li>Create your own strategies with automated rebalancing and social trading features.</li>
-                    </ul>
-                </div>
-
-                <p className={`text-xl font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'} max-w-2xl mx-auto mb-12`}>
-                    Crypto made <span className="font-semibold">simple</span>, <span className="font-semibold">thematic</span>, and <span className="font-semibold">social</span>.
-                </p>
 
 
 
@@ -253,7 +233,7 @@ export const LandingPage = ({
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-16">
                     {stats.map((stat, index) => (
                         <div key={index} className={`${darkMode ? 'bg-gray-800/30' : 'bg-white/50'} backdrop-blur-sm p-4 rounded-xl border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                             <div className="flex items-center justify-center gap-2 text-purple-400 mb-2">

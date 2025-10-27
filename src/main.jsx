@@ -1,17 +1,23 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Provider } from 'react-redux';
 import './index.css'
 import App from './App.jsx'
 import { WalletProvider } from './src/hook/wallet.jsx'
 import { Toaster } from 'react-hot-toast';
 import { Buffer } from 'buffer'
+
+import { store,} from './src/store/store';
 window.Buffer = Buffer
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <WalletProvider autoConnect={true}>
-        <Toaster position="top-right" />
-    <App />
-    </WalletProvider>
-
+    <Provider store={store}>
+      
+        <WalletProvider autoConnect={true}>
+          <Toaster position="top-right" />
+          <App />
+        </WalletProvider>
+   
+    </Provider>
   </StrictMode>,
 )

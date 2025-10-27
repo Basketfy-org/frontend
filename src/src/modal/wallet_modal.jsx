@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   X,
@@ -6,54 +5,63 @@ import {
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
-
+import { useSelector, useDispatch } from 'react-redux';
 import { useWallet } from '../hook/wallet';
 
 import toast from 'react-hot-toast';
 
+import {
+  setWalletConnected,
+  setWalletAddress,
+  setFormattedAddress,
+  resetWallet,
+} from '../store/store';
 
 const WalletModal = ({ showWalletModal, setShowWalletModal, darkMode }) => {
   const {
     connectWallet,
     disconnectWallet,
-    connected,
+    walletConnected,
     connecting,
     walletAddress,
     formatAddress,
   } = useWallet();
 
+  const dispatch = useDispatch();
   const [error, setError] = useState('');
 
   const wallets = [
     { name: 'Phantom', icon: './src/assets/ghost.png', adapter: 'phantom' },
     { name: 'Metamask', icon: './src/assets/metamask.png', adapter: 'metamask' },
     // { name: 'Backpack', icon: '🎒', adapter: 'backpack' },
-    //{ name: 'Coinbase Wallet', icon: '🔵', adapter: 'coinbase' }
+    // { name: 'Coinbase Wallet', icon: '🔵', adapter: 'coinbase' }
   ];
 
 
+  const formatxwalletAddress = useSelector((state) => state.global.formattedAddress);
 
   const handleConnect = async (walletType) => {
     setError('');
 
-    const result = await
-      connectWallet(walletType)
+    const result = await connectWallet(walletType);
 
     if (result.success) {
-         setShowWalletModal(false);
-       toast.success("Wallet Connected");
-   
+      //  console.log(result);
+      // ✅ Update Redux store with correct values
+      dispatch(setWalletConnected(true));
+      dispatch(setWalletAddress(result.address));
+      dispatch(setFormattedAddress(formatAddress(result.address)));
+      setShowWalletModal(false);
+      toast.success("Wallet Connected");
     } else {
       setError(result.error);
-      // Optional: show the specific error too
       toast.error(result.error);
     }
   };
 
   const handleDisconnect = async () => {
     await disconnectWallet();
-    setShowWalletModal(false);
-    setWalletConnected(false);
+
   };
 
   if (!showWalletModal) return null;
@@ -62,8 +70,8 @@ const WalletModal = ({ showWalletModal, setShowWalletModal, darkMode }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 max-w-sm w-full mx-4`}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className={`${darkMode ? ' text-white' : 'text-gray-900'} text-lg font-semibold`}>
-            {connected ? 'Wallet Connected' : 'Connect Wallet'}
+          <h3 className={`${darkMode ? 'text-white' : 'text-gray-900'} text-lg font-semibold`}>
+            {walletConnected ? 'Wallet Connected' : 'Connect Wallet'}
           </h3>
           <button
             onClick={() => setShowWalletModal(false)}
@@ -73,7 +81,7 @@ const WalletModal = ({ showWalletModal, setShowWalletModal, darkMode }) => {
           </button>
         </div>
 
-        {connected ? (
+        {walletConnected ? (
           <div className="space-y-4">
             <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-green-50'} border ${darkMode ? 'border-gray-600' : 'border-green-200'}`}>
               <div className="flex items-center gap-2 mb-2">
@@ -81,7 +89,7 @@ const WalletModal = ({ showWalletModal, setShowWalletModal, darkMode }) => {
                 <span className="font-medium text-green-700 dark:text-green-400">Connected</span>
               </div>
               <div className="text-sm opacity-75">
-                Address: {formatAddress(walletAddress)}
+                Address: {formatxwalletAddress}
               </div>
             </div>
 
@@ -113,7 +121,9 @@ const WalletModal = ({ showWalletModal, setShowWalletModal, darkMode }) => {
               >
                 <img src={wallet.icon} className="w-8 h-8 flex items-center justify-center text-lg" />
 
-                <span className={` ${darkMode ? 'text-white' : 'text-gray-900'} flex-1 text-left font-thin`}>{wallet.name}</span>
+                <span className={`${darkMode ? 'text-white' : 'text-gray-900'} flex-1 text-left font-thin`}>
+                  {wallet.name}
+                </span>
                 {connecting && <Loader2 className="animate-spin" size={16} />}
               </button>
             ))}
@@ -123,4 +133,5 @@ const WalletModal = ({ showWalletModal, setShowWalletModal, darkMode }) => {
     </div>
   );
 };
+
 export default WalletModal;

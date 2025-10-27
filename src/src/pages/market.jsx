@@ -12,9 +12,10 @@ import Header from '../components/header';
 import { useNavigate } from 'react-router-dom';
 import { getBaskets } from '../api/basketApi';
 import logger from '../uutils/logger';
+import { stats } from '../../App';
 
-const ExplorePage = ({ darkMode,
-
+const MarketPage = ({
+    darkMode,
     setShowWalletModal,
     setWalletConnected,
     walletConnected,
@@ -46,10 +47,10 @@ const ExplorePage = ({ darkMode,
 
                 // Check if response exists and has data property
                 if (response && response.result && Array.isArray(response.result)) {
-                    console.log("response.data", response.result);
+                   // console.log("response.data", response.result);
                     logger(`Fetched Baskets: ${response.result.length}`);
                     setBaskets(response.result);
-                  
+
                 } else {
                     // Handle case where response.data is undefined, null, or not an array
                     console.log("Failed to fetch baskets: Invalid response structure", response);
@@ -89,7 +90,7 @@ const ExplorePage = ({ darkMode,
             setShowWalletModal={setShowWalletModal}
             route={'/'}
             walletConnected={walletConnected}
-            title="Basket Explorer"
+            title="Market"
         />
 
         {/* Filters */}
@@ -205,4 +206,4 @@ const ExplorePage = ({ darkMode,
     </div>)
 };
 
-export default ExplorePage;
+export default MarketPage;

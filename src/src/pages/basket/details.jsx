@@ -51,7 +51,7 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
 
       {/* Header Component */}
       <Header
-        darkMode={darkMode}
+       
         setShowWalletModal={setShowWalletModal}
         route={'/explore'}
         routeText='Back to Explorer'

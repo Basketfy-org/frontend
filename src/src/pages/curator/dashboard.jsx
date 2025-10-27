@@ -41,12 +41,13 @@ import {
     Bar
 } from 'recharts';
 import { useNavigate } from 'react-router-dom';
+import Header from '../../components/header';
 const CuratorDashboard = ({ darkMode = false }) => {
     const [activeTab, setActiveTab] = useState('overview');
     const [selectedBasket, setSelectedBasket] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showRebalanceModal, setShowRebalanceModal] = useState(false);
- const navigate = useNavigate(); // Initialize useNavigate hook
+    const navigate = useNavigate(); // Initialize useNavigate hook
     // Mock curator data
     const curatorData = {
         profile: {
@@ -202,12 +203,12 @@ const CuratorDashboard = ({ darkMode = false }) => {
                     <AreaChart data={chartData}>
                         <defs>
                             <linearGradient id="colorAum" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
+                                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1} />
                             </linearGradient>
                             <linearGradient id="colorEarnings" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.1}/>
+                                <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8} />
+                                <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.1} />
                             </linearGradient>
                         </defs>
                         <XAxis dataKey="date" stroke={darkMode ? '#9ca3af' : '#6b7280'} fontSize={12} />
@@ -245,10 +246,9 @@ const CuratorDashboard = ({ darkMode = false }) => {
                         { action: "Rebalance scheduled", basket: "Emerging Markets", time: "2 days ago", status: "pending" }
                     ].map((activity, index) => (
                         <div key={index} className={`flex items-center gap-4 p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                            <div className={`w-3 h-3 rounded-full ${
-                                activity.status === 'success' ? 'bg-green-400' :
-                                activity.status === 'info' ? 'bg-blue-400' : 'bg-yellow-400'
-                            }`}></div>
+                            <div className={`w-3 h-3 rounded-full ${activity.status === 'success' ? 'bg-green-400' :
+                                    activity.status === 'info' ? 'bg-blue-400' : 'bg-yellow-400'
+                                }`}></div>
                             <div className="flex-1">
                                 <p className="font-medium">{activity.action}</p>
                                 <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{activity.basket}</p>
@@ -267,10 +267,10 @@ const CuratorDashboard = ({ darkMode = false }) => {
                 <h2 className="text-2xl font-bold">My Baskets</h2>
                 <button
                     onClick={() => {
-                             navigate("/create");
-                       // setShowCreateModal(true)
+                        navigate("/create");
+                        // setShowCreateModal(true)
                     }}
-                
+
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg transition-all transform hover:scale-105 shadow-lg font-medium flex items-center gap-2"
                 >
                     <Plus className="w-5 h-5" />
@@ -286,11 +286,10 @@ const CuratorDashboard = ({ darkMode = false }) => {
                                 <h3 className="text-xl font-semibold mb-1">{basket.name}</h3>
                                 <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{basket.description}</p>
                             </div>
-                            <div className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 ${
-                                basket.status === 'active' ? (darkMode ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-800') :
-                                basket.status === 'rebalancing' ? (darkMode ? 'bg-yellow-900 text-yellow-300' : 'bg-yellow-100 text-yellow-800') :
-                                (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800')
-                            }`}>
+                            <div className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 ${basket.status === 'active' ? (darkMode ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-800') :
+                                    basket.status === 'rebalancing' ? (darkMode ? 'bg-yellow-900 text-yellow-300' : 'bg-yellow-100 text-yellow-800') :
+                                        (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800')
+                                }`}>
                                 {basket.status === 'active' && <Check className="w-3 h-3" />}
                                 {basket.status === 'rebalancing' && <RefreshCw className="w-3 h-3 animate-spin" />}
                                 {basket.status}
@@ -312,8 +311,8 @@ const CuratorDashboard = ({ darkMode = false }) => {
                             <div>
                                 <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>7D Performance</p>
                                 <div className="flex items-center gap-1">
-                                    {basket.performance7d > 0 ? 
-                                        <TrendingUp className="w-4 h-4 text-green-400" /> : 
+                                    {basket.performance7d > 0 ?
+                                        <TrendingUp className="w-4 h-4 text-green-400" /> :
                                         <TrendingDown className="w-4 h-4 text-red-400" />
                                     }
                                     <span className={`text-lg font-bold ${basket.performance7d > 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -342,7 +341,7 @@ const CuratorDashboard = ({ darkMode = false }) => {
                         </div>
 
                         <div className="flex gap-2">
-                            <button 
+                            <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedBasket(basket);
@@ -422,7 +421,7 @@ const CuratorDashboard = ({ darkMode = false }) => {
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto`}>
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-2xl font-bold">Rebalance {selectedBasket.name}</h2>
-                        <button 
+                        <button
                             onClick={() => setShowRebalanceModal(false)}
                             className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
                         >
@@ -444,8 +443,8 @@ const CuratorDashboard = ({ darkMode = false }) => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <input 
-                                        type="number" 
+                                    <input
+                                        type="number"
                                         defaultValue={token.weight}
                                         className={`w-20 p-2 rounded border ${darkMode ? 'bg-gray-600 border-gray-500' : 'bg-white border-gray-300'}`}
                                     />
@@ -456,7 +455,7 @@ const CuratorDashboard = ({ darkMode = false }) => {
                     </div>
 
                     <div className="flex gap-4 mt-6">
-                        <button 
+                        <button
                             onClick={() => setShowRebalanceModal(false)}
                             className={`flex-1 py-3 px-4 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} transition-colors`}
                         >
@@ -474,40 +473,17 @@ const CuratorDashboard = ({ darkMode = false }) => {
     return (
         <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
             {/* Header */}
-            <header className={`${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg sticky top-0 z-40`}>
-                <div className="max-w-7xl mx-auto px-6 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-3">
-                                <img 
-                                    src={curatorData.profile.avatar} 
-                                    alt="Profile" 
-                                    className="w-12 h-12 rounded-full"
-                                />
-                                <div>
-                                    <h1 className="text-xl font-bold">{curatorData.profile.name}</h1>
-                                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        Curator Dashboard
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex gap-3">
-                            <button className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
-                                <Bell className="w-5 h-5" />
-                            </button>
-                            <button className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
-                                <Settings className="w-5 h-5" />
-                            </button>
-                            <button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2">
-                                <Share2 className="w-4 h-4" />
-                                Share Profile
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
+           
+            <Header
+                darkMode={darkMode}
+                curatorData={curatorData}
+                // setWalletConnected={setWalletConnected}
+                // setShowWalletModal={setShowWalletModal}
+                route={'/market'}
+                routeText='Market'
+                // walletConnected={walletConnected}
+                title="Curator Dashboard"
+            />
             {/* Navigation Tabs */}
             <div className="max-w-7xl mx-auto px-6 py-4">
                 <div className="flex gap-1 mb-8">
@@ -521,11 +497,10 @@ const CuratorDashboard = ({ darkMode = false }) => {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium ${
-                                activeTab === tab.id
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium ${activeTab === tab.id
                                     ? 'bg-purple-600 text-white shadow-lg'
                                     : `${darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-800' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`
-                            }`}
+                                }`}
                         >
                             <tab.icon className="w-4 h-4" />
                             {tab.label}
@@ -537,11 +512,11 @@ const CuratorDashboard = ({ darkMode = false }) => {
                 {activeTab === 'overview' && <OverviewTab />}
                 {activeTab === 'baskets' && <BasketsTab />}
                 {activeTab === 'earnings' && <EarningsTab />}
-                
+
                 {activeTab === 'analytics' && (
                     <div className="space-y-6">
                         <h2 className="text-2xl font-bold">Analytics & Performance</h2>
-                        
+
                         {/* Performance Comparison */}
                         <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 shadow-lg border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                             <h3 className="text-xl font-semibold mb-6">Basket Performance Comparison</h3>
@@ -567,12 +542,11 @@ const CuratorDashboard = ({ darkMode = false }) => {
                                         .map((basket, index) => (
                                             <div key={basket.id} className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
-                                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                                                        index === 0 ? 'bg-yellow-500 text-white' :
-                                                        index === 1 ? 'bg-gray-400 text-white' :
-                                                        index === 2 ? 'bg-orange-600 text-white' :
-                                                        'bg-gray-600 text-white'
-                                                    }`}>
+                                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? 'bg-yellow-500 text-white' :
+                                                            index === 1 ? 'bg-gray-400 text-white' :
+                                                                index === 2 ? 'bg-orange-600 text-white' :
+                                                                    'bg-gray-600 text-white'
+                                                        }`}>
                                                         {index + 1}
                                                     </span>
                                                     <span className="font-medium">{basket.name}</span>
@@ -598,10 +572,9 @@ const CuratorDashboard = ({ darkMode = false }) => {
                                             <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{item.metric}</span>
                                             <div className="flex items-center gap-2">
                                                 <span className="font-medium">{item.value}</span>
-                                                <div className={`w-2 h-2 rounded-full ${
-                                                    item.status === 'good' ? 'bg-green-400' :
-                                                    item.status === 'moderate' ? 'bg-yellow-400' : 'bg-red-400'
-                                                }`}></div>
+                                                <div className={`w-2 h-2 rounded-full ${item.status === 'good' ? 'bg-green-400' :
+                                                        item.status === 'moderate' ? 'bg-yellow-400' : 'bg-red-400'
+                                                    }`}></div>
                                             </div>
                                         </div>
                                     ))}
@@ -614,21 +587,21 @@ const CuratorDashboard = ({ darkMode = false }) => {
                 {activeTab === 'profile' && (
                     <div className="space-y-6">
                         <h2 className="text-2xl font-bold">Curator Profile</h2>
-                        
+
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Profile Info */}
                             <div className={`lg:col-span-2 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 shadow-lg border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                                 <div className="flex items-start gap-6 mb-6">
-                                    <img 
-                                        src={curatorData.profile.avatar} 
-                                        alt="Profile" 
+                                    <img
+                                        src={curatorData.profile.avatar}
+                                        alt="Profile"
                                         className="w-24 h-24 rounded-full"
                                     />
                                     <div className="flex-1">
                                         <h3 className="text-2xl font-bold mb-2">{curatorData.profile.name}</h3>
                                         <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>{curatorData.profile.username}</p>
                                         <p className={`${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{curatorData.profile.bio}</p>
-                                        
+
                                         <div className="flex items-center gap-4 mt-4">
                                             <div className="flex items-center gap-2">
                                                 <Users className="w-4 h-4 text-purple-400" />
@@ -645,26 +618,26 @@ const CuratorDashboard = ({ darkMode = false }) => {
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium mb-2">Bio</label>
-                                        <textarea 
+                                        <textarea
                                             defaultValue={curatorData.profile.bio}
                                             className={`w-full p-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                                             rows="3"
                                         />
                                     </div>
-                                    
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium mb-2">Default Management Fee</label>
-                                            <input 
-                                                type="number" 
+                                            <input
+                                                type="number"
                                                 defaultValue="2.0"
                                                 className={`w-full p-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium mb-2">Default Performance Fee</label>
-                                            <input 
-                                                type="number" 
+                                            <input
+                                                type="number"
                                                 defaultValue="15.0"
                                                 className={`w-full p-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                                             />
@@ -734,7 +707,7 @@ const CuratorDashboard = ({ darkMode = false }) => {
                     <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto`}>
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold">Create New Basket</h2>
-                            <button 
+                            <button
                                 onClick={() => setShowCreateModal(false)}
                                 className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
                             >
@@ -746,8 +719,8 @@ const CuratorDashboard = ({ darkMode = false }) => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium mb-2">Basket Name</label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         placeholder="e.g., DeFi Blue Chip"
                                         className={`w-full p-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                                     />
@@ -767,7 +740,7 @@ const CuratorDashboard = ({ darkMode = false }) => {
 
                             <div>
                                 <label className="block text-sm font-medium mb-2">Description</label>
-                                <textarea 
+                                <textarea
                                     placeholder="Describe your basket strategy..."
                                     className={`w-full p-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                                     rows="3"
@@ -777,8 +750,8 @@ const CuratorDashboard = ({ darkMode = false }) => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium mb-2">Management Fee (%)</label>
-                                    <input 
-                                        type="number" 
+                                    <input
+                                        type="number"
                                         defaultValue="2.0"
                                         step="0.1"
                                         className={`w-full p-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
@@ -786,8 +759,8 @@ const CuratorDashboard = ({ darkMode = false }) => {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium mb-2">Performance Fee (%)</label>
-                                    <input 
-                                        type="number" 
+                                    <input
+                                        type="number"
                                         defaultValue="15.0"
                                         step="0.1"
                                         className={`w-full p-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
@@ -800,13 +773,13 @@ const CuratorDashboard = ({ darkMode = false }) => {
                                 <div className="space-y-3">
                                     {[1, 2, 3].map((i) => (
                                         <div key={i} className="flex gap-3">
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 placeholder="Token symbol (e.g., ETH)"
                                                 className={`flex-1 p-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                                             />
-                                            <input 
-                                                type="number" 
+                                            <input
+                                                type="number"
                                                 placeholder="Weight %"
                                                 className={`w-32 p-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
                                             />
@@ -821,7 +794,7 @@ const CuratorDashboard = ({ darkMode = false }) => {
                         </div>
 
                         <div className="flex gap-4 mt-8">
-                            <button 
+                            <button
                                 onClick={() => setShowCreateModal(false)}
                                 className={`flex-1 py-3 px-4 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} transition-colors`}
                             >

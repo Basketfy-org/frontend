@@ -7,7 +7,12 @@ import * as anchor from '@coral-xyz/anchor';
 import { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, TOKEN_PROGRAM_ID, } from '@solana/spl-token';
 import logger from '../uutils/logger';
 import toast from 'react-hot-toast';
-
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  setWalletConnected,
+  setFormattedAddress,
+  resetWallet,
+} from '../store/store';
 // Wallet Context
 const WalletContext = createContext({});
 
@@ -24,7 +29,7 @@ export const WalletProvider = ({ children }) => {
   const [connection, setConnection] = useState(null);
   const [anchorProvider, setAnchorProvider] = useState(null);
   const [program, setProgram] = useState(null);
-
+  const dispatch = useDispatch();
   // Initialize Solana connection
   useEffect(() => {
     initializeSolanaConnection();
@@ -46,10 +51,8 @@ export const WalletProvider = ({ children }) => {
       const conn = new Connection(rpcUrl, 'confirmed');
       setConnection(conn);
 
-
       logger(`Solana connection initialized: ${rpcUrl}`);
     } catch (error) {
-
       logger('Failed to initialize Solana connection:', error);
     }
   };
@@ -61,11 +64,9 @@ export const WalletProvider = ({ children }) => {
       const programInstance = new anchor.Program(idl, anchorProvider);
       setProgram(programInstance);
 
-
       logger(`Program ID: ${programInstance.programId.toString()}`);
     } catch (error) {
-
-      logger(`Failed to initialize program:', ${error}`);
+      logger(`Failed to initialize program: ${error}`);
     }
   };
 
@@ -77,8 +78,7 @@ export const WalletProvider = ({ children }) => {
       try {
         await connectWallet(savedWalletType, true);
       } catch (error) {
-
-        logger(`Failed to restore wallet connection:', ${error}`);
+        logger(`Failed to restore wallet connection: ${error}`);
         sessionStorage.removeItem('walletAddress');
         sessionStorage.removeItem('walletType');
       }
@@ -95,8 +95,7 @@ export const WalletProvider = ({ children }) => {
       switch (type) {
         case 'phantom':
           if (!window.solana?.isPhantom) {
-         
-        return { success: false, error: 'Phantom Wallet not found. Please install Phantom.'};
+            return { success: false, error: 'Phantom Wallet not found. Please install Phantom.' };
           }
           walletAdapter = window.solana;
           response = skipPrompt
@@ -106,17 +105,14 @@ export const WalletProvider = ({ children }) => {
 
         case 'metamask':
           if (!window.ethereum?.isMetaMask) {
-
             return { success: false, error: 'MetaMask Wallet not found. Please install MetaMask.' };
           }
           walletAdapter = window.ethereum;
-
 
           if (skipPrompt) {
             // Check if already connected
             const accounts = await walletAdapter.request({ method: 'eth_accounts' });
             if (accounts.length === 0) {
-
               return { success: false, error: 'MetaMask not connected. Please connect manually first.' };
             }
             response = { publicKey: { toString: () => accounts[0] } };
@@ -126,10 +122,7 @@ export const WalletProvider = ({ children }) => {
           }
           break;
 
-
-
         default:
-
           return { success: false, error: "unsupported wallet type" };
       }
 
@@ -164,7 +157,6 @@ export const WalletProvider = ({ children }) => {
   const setupAnchorProvider = (walletAdapter) => {
     try {
       if (!connection) {
-
         logger('Connection not available for Anchor provider setup');
         return;
       }
@@ -176,22 +168,18 @@ export const WalletProvider = ({ children }) => {
       anchor.setProvider(provider);
       setAnchorProvider(provider);
 
-
       logger(`Anchor provider initialized with wallet: ${walletAdapter.publicKey?.toString()}`);
     } catch (error) {
-
       logger(`Failed to setup Anchor provider: ${error.message}`);
     }
   };
 
   const setupWalletEventListeners = (walletAdapter) => {
     walletAdapter.on('connect', (publicKey) => {
-
       logger(`Wallet connected: ${publicKey.toString()}`);
     });
 
     walletAdapter.on('disconnect', () => {
-
       logger('Wallet disconnected');
       handleDisconnect();
     });
@@ -215,10 +203,15 @@ export const WalletProvider = ({ children }) => {
         await wallet.disconnect();
       }
       handleDisconnect();
+      dispatch(setWalletConnected(false));
+      dispatch(setWalletAddress("null"));
+      dispatch(setFormattedAddress(formatAddress("null")));
     } catch (error) {
-
       logger(`Disconnect error: ${error.message}`);
       handleDisconnect(); // Force disconnect even if error
+      dispatch(setWalletConnected(false));
+      dispatch(setWalletAddress("null"));
+      dispatch(setFormattedAddress(formatAddress("null")));
     }
   };
 
@@ -236,28 +229,22 @@ export const WalletProvider = ({ children }) => {
       wallet.removeAllListeners('disconnect');
       wallet.removeAllListeners('accountChanged');
     }
-
   };
 
   const signTransaction = async (transaction) => {
     if (!wallet || !connected) {
-
-
       toast.error('Wallet not connected');
       return;
     }
     if (typeof wallet.signTransaction !== 'function') {
-
       toast.error("Current wallet does not support signing transactions");
       return;
-
     }
 
     try {
       const signedTransaction = await wallet.signTransaction(transaction);
       return signedTransaction;
     } catch (error) {
-
       toast.error('Transaction signing failed');
       logger(`Transaction signing error: ${error.message}`);
       return;
@@ -266,7 +253,6 @@ export const WalletProvider = ({ children }) => {
 
   const signAllTransactions = async (transactions) => {
     if (!wallet || !connected) {
-
       toast.error('Wallet not connected');
       return;
     }
@@ -275,7 +261,6 @@ export const WalletProvider = ({ children }) => {
       const signedTransactions = await wallet.signAllTransactions(transactions);
       return signedTransactions;
     } catch (error) {
-
       toast.error('Failed to sign multiple transactions');
       return;
     }
@@ -283,7 +268,6 @@ export const WalletProvider = ({ children }) => {
 
   const signMessage = async (message) => {
     if (!wallet || !connected) {
-
       toast.error('Wallet not connected');
       return;
     }
@@ -292,17 +276,14 @@ export const WalletProvider = ({ children }) => {
       const signature = await wallet.signMessage(new TextEncoder().encode(message));
       return signature;
     } catch (error) {
-
       toast.error('Message signing failed');
       logger(`Message signing error: ${error.message}`);
-
       return;
     }
   };
 
   const sendTransaction = async (transaction, options = {}) => {
     if (!wallet || !connected || !connection) {
-
       toast.error('Wallet or connection not available');
       return;
     }
@@ -331,7 +312,6 @@ export const WalletProvider = ({ children }) => {
       const balance = await connection.getBalance(publicKey);
       return balance / 1000000000; // Convert lamports to SOL
     } catch (error) {
-
       toast.error('Failed to fetch balance');
       logger(`Balance fetch error: ${error.message}`);
       return 0;
@@ -378,23 +358,18 @@ export const WalletProvider = ({ children }) => {
   // Main basket creation function
   const createBasket = async (name, symbol, uri, decimals, tokenMints, weights) => {
     if (!wallet || !connected || !program || !anchorProvider) {
-
       toast.error('Wallet not connected or program not initialized');
       return;
     }
 
     try {
-
-
       // Validate inputs
       if (tokenMints.length === 0 || weights.length === 0) {
-
         toast.error('Token mints and weights are required');
         return;
       }
 
       if (tokenMints.length !== weights.length) {
-
         toast.error('Token mints and weights must have the same length');
         return;
       }
@@ -422,6 +397,7 @@ export const WalletProvider = ({ children }) => {
         configPDA: configPDA.toString(),
         mintKeypair: mintKeypair.publicKey.toString()
       });
+
       // Convert token mint strings to PublicKey objects
       const tokenMintPublicKeys = tokenMints.map(mint => {
         try {
@@ -433,6 +409,7 @@ export const WalletProvider = ({ children }) => {
 
       // Convert weights to anchor.BN (BigNumber) objects
       const weightsBN = weights.map(weight => new anchor.BN(weight * 100));
+
       // Create the transaction
       const tx = await program.methods
         .createBasket(
@@ -456,6 +433,7 @@ export const WalletProvider = ({ children }) => {
         })
         .signers([mintKeypair])
         .rpc();
+
       return {
         success: true,
         transactionSignature: tx,
@@ -471,7 +449,6 @@ export const WalletProvider = ({ children }) => {
           basketReferenceId: basketCount.toString(),
         }
       };
-
     } catch (error) {
       toast.error('Failed to create basket');
       logger(`Basket creation error: ${error.message}`);
@@ -485,10 +462,8 @@ export const WalletProvider = ({ children }) => {
     }
   };
 
-
   const buyBasket = async (amount, basketMint, basketId) => {
     if (!wallet || !connected || !program || !anchorProvider) {
-
       toast.error('Wallet not connected or program not initialized');
       return;
     }
@@ -535,21 +510,17 @@ export const WalletProvider = ({ children }) => {
         logger(`User token account found: ${userTokenAccount.toString()}, Balance: ${tokenBalance.value.uiAmount}`);
       }
 
-
-
       // Find PDAs
       const [factoryPDA] = findFactoryPDA(program.programId);
       const [configPDA] = findConfigPDA(factoryPDA, new anchor.BN(basketId));
       const [mintAuthorityPDA] = findMintAuthorityPDA(configPDA);
 
-
-      logger(`Creating basket mint with:,${JSON.stringify({
+      logger(`Creating basket mint with: ${JSON.stringify({
         userTokenAccount: userTokenAccount.toString(),
         factoryPDA: factoryPDA.toString(),
         configPDA: configPDA.toString(),
         basketMint: basketMint.toString()
       })}`);
-
 
       // Create the transaction
       const tx = await program.methods
@@ -563,7 +534,6 @@ export const WalletProvider = ({ children }) => {
           recipientTokenAccount: userTokenAccount,
           tokenProgram: TOKEN_PROGRAM_ID,
         })
-
         .rpc();
 
       logger("Basket token mint created successfully:", tx);
@@ -575,9 +545,8 @@ export const WalletProvider = ({ children }) => {
         mintAddress: basketMint.toString(),
         message: `Successfully bought ${amount} of the basket`
       };
-
     } catch (error) {
-      logger(`Error buying basket:, ${error}`);
+      logger(`Error buying basket: ${error}`);
       return {
         success: false,
         transactionSignature: "",
@@ -591,7 +560,6 @@ export const WalletProvider = ({ children }) => {
   // Get factory information
   const getFactoryInfo = async () => {
     if (!program) {
-
       logger('Program not initialized');
       return;
     }
@@ -606,7 +574,6 @@ export const WalletProvider = ({ children }) => {
         authority: factoryAccount.authority.toString()
       };
     } catch (error) {
-
       logger(`Error fetching factory info: ${error.message}`);
       return;
     }
@@ -615,7 +582,6 @@ export const WalletProvider = ({ children }) => {
   // Get basket configuration
   const getBasketConfig = async (configPDA) => {
     if (!program) {
-
       logger('Program not initialized');
       return;
     }
@@ -635,14 +601,12 @@ export const WalletProvider = ({ children }) => {
         totalSupply: configAccount.totalSupply.toString()
       };
     } catch (error) {
-
       logger(`Error fetching basket config: ${error.message}`);
       return;
     }
   };
 
   const value = {
-
     // State
     wallet,
     walletAddress,
@@ -650,6 +614,8 @@ export const WalletProvider = ({ children }) => {
     connection,
     anchorProvider,
     program,
+    connected,
+    connecting,
     walletConnected: connected && wallet && anchorProvider ? true : false,
 
     // Actions

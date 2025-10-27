@@ -1,26 +1,29 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Wallet, ChevronDown, Copy, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Wallet, ChevronDown, Copy, ExternalLink, Bell, Settings, Share2 } from 'lucide-react';
 import { useWallet } from '../hook/wallet';
 import { useNavigate } from 'react-router-dom';
+import { toggleDarkMode } from '../store/store';
+import { useSelector, useDispatch } from 'react-redux';
+
 
 const Header = ({
-  darkMode,
   route,
   routeText = "Back to Home",
   setShowWalletModal,
-
   title = "Basket Explorer",
-  basketDetails = null
+  basketDetails = null,
+  curatorData = null,
 }) => {
-  const navigate = useNavigate(); // Initialize useNavigate hook
+  const navigate = useNavigate();
 
   const {
     disconnectWallet,
-    walletConnected,
-    walletAddress,
-    formatAddress,
   } = useWallet();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dispatch = useDispatch();
+  const isDarkMode = useSelector((state) => state.global.isDarkMode);
+  const formattedAddress = useSelector((state) => state.global.formattedAddress);
+  const walletConnected = useSelector((state) => state.global.walletConnected);
   const dropdownRef = useRef(null);
 
   // Close dropdown when clicking outside
@@ -38,130 +41,178 @@ const Header = ({
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-
   };
 
   return (
-    <header className={`${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg sticky top-0 z-10`}>
+    <header className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg sticky top-0 z-40`}>
       <div className="max-w-7xl mx-auto px-6 py-4">
         {/* Top Row */}
         <div className="flex items-center justify-between">
-          <button
-            onClick={() => navigate(route || '/')}
-            className="flex items-center gap-2 hover:text-purple-400 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            {routeText}
-          </button>
+          {/* Left Section - Back Button or Basket Details */}
+          <div className="flex items-center gap-4">
+            {basketDetails ? (
+              <div className="flex items-center gap-3">
+                <img
+                  src={basketDetails.image || 'https://i.ibb.co/7J52Ldr7/basket-svgrepo-com.png'}
+                  alt={basketDetails.name}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <h1 className="text-xl font-bold">{basketDetails.name}</h1>
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Created by {basketDetails.creator}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate(route || '/')}
+                className="flex items-center gap-2 hover:text-purple-400 transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                {routeText}
+              </button>
+            )}
+          </div>
 
-          <h1 className="text-2xl font-bold">{title}</h1>
+          {/* Center Title - Only show if no basket details */}
+          {!basketDetails && (
+            <h1 className="text-2xl font-bold absolute left-1/2 transform -translate-x-1/2">{title}</h1>
+          )}
 
-          {/* Wallet Section */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => walletConnected ? setIsDropdownOpen(!isDropdownOpen) : setShowWalletModal(true)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg ${walletConnected ? 'bg-green-600' : 'bg-purple-600'
-                } text-white hover:opacity-90 transition-opacity`}
-            >
-              <Wallet className="w-4 h-4" />
-              {walletConnected ? formatAddress(walletAddress) : 'Connect Wallet'}
-              {walletConnected && <ChevronDown className="w-4 h-4" />}
-            </button>
+          {/* Right Section - Action Buttons and Wallet */}
+          <div className="flex items-center gap-4">
+            {/* Action Buttons Container */}
+            <div className="flex items-center gap-3">
+              {/* Dark Mode Toggle */}
+              <button
+                onClick={() => dispatch(toggleDarkMode())}
+                className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+              >
+                {isDarkMode ? '☀️' : '🌙'}
+              </button>
 
-            {/* Dropdown Menu */}
-            {walletConnected && isDropdownOpen && (
-              <div className={`absolute right-0 mt-2 w-64 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-                } border rounded-lg shadow-xl z-20`}>
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Wallet Address
-                    </span>
-                    <div className="flex items-center gap-2">
+              {/* Notifications */}
+              <button className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
+                <Bell className="w-3 h-3" />
+              </button>
+
+              {/* Settings */}
+              <button className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
+                <img src="../src/assets/farmer.svg" alt="farmer" className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className={`w-px h-8 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+
+            {/* Wallet Section */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => walletConnected ? setIsDropdownOpen(!isDropdownOpen) : setShowWalletModal(true)}
+                className={`flex items-center gap-2 px-2 py-2 text-xs rounded-lg ${walletConnected
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
+                  : 'bg-purple-600 hover:bg-purple-700'
+                  } text-white transition-all`}
+              >
+                <Wallet className="w-4 h-4" />
+                {walletConnected ? formattedAddress : 'Connect Wallet'}
+                {walletConnected && <ChevronDown className="w-4 h-4" />}
+              </button>
+
+              {/* Dropdown Menu */}
+              {walletConnected && isDropdownOpen && (
+                <div className={`absolute right-0 mt-2 w-64 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                  } border rounded-lg shadow-xl z-20`}>
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Wallet Address
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => copyToClipboard(formattedAddress)}
+                          className={`p-1 rounded hover:${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
+                            } transition-colors`}
+                          title="Copy address"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={() => window.open(`https://solscan.io/address/${formattedAddress}`, '_blank')}
+                          className={`p-1 rounded hover:${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
+                            } transition-colors`}
+                          title="View on Solscan"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className={`p-2 rounded ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} mb-4`}>
+                      <code className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} break-all`}>
+                        {formattedAddress}
+                      </code>
+                    </div>
+
+                    <div className="space-y-2">
                       <button
-                        onClick={() => copyToClipboard(walletAddress)}
-                        className={`p-1 rounded hover:${darkMode ? 'bg-gray-700' : 'bg-gray-100'
-                          } transition-colors`}
-                        title="Copy address"
+                        onClick={() => {
+                          setShowWalletModal();
+                          setIsDropdownOpen(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-sm rounded-lg hover:bg-purple-600 hover:text-white transition-colors"
                       >
-                        <Copy className="w-3 h-3" />
+                        Switch Wallet
                       </button>
                       <button
-                        onClick={() => window.open(`https://solscan.io/address/${walletAddress}`, '_blank')}
-                        className={`p-1 rounded hover:${darkMode ? 'bg-gray-700' : 'bg-gray-100'
-                          } transition-colors`}
-                        title="View on Etherscan"
+                        onClick={() => {
+                          disconnectWallet();
+                          setIsDropdownOpen(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-sm rounded-lg hover:bg-red-600 hover:text-white transition-colors text-red-500"
                       >
-                        <ExternalLink className="w-3 h-3" />
+                        Disconnect
+                      </button>
+                      <button
+                        onClick={() => {
+                          navigate('/curator-dashboard');
+                          setIsDropdownOpen(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-sm rounded-lg hover:bg-green-600 hover:text-white transition-colors text-green-500"
+                      >
+                        My Baskets
                       </button>
                     </div>
                   </div>
+                </div>
+              )}
+            </div>
 
-                  <div className={`p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} mb-4`}>
-                    <code className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'} break-all`}>
-                      {walletAddress}
-                    </code>
-                  </div>
-
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => {
-                        setShowWalletModal();
-                        setIsDropdownOpen(false);
-                      }}
-                      className="w-full px-3 py-2 text-left text-sm rounded-lg hover:bg-purple-600 hover:text-white transition-colors"
-                    >
-                      Switch Wallet
-                    </button>
-                    <button
-                      onClick={() => {
-                        disconnectWallet();
-
-                        setIsDropdownOpen(false);
-                      }}
-                      className="w-full px-3 py-2 text-left text-sm rounded-lg hover:bg-red-600 hover:text-white transition-colors text-red-500"
-                    >
-                      Disconnect
-                    </button>
-                     <button
-                      onClick={() => {
-                       navigate( '/curator-dashboard')
-
-                        setIsDropdownOpen(false);
-                      }}
-                      className="w-full px-3 py-2 text-left text-sm rounded-lg hover:bg-green-600 hover:text-white transition-colors text-green-500"
-                    >
-                      Picker Dashboard
-                    </button>
+            {/* Curator Data Section */}
+            {curatorData && (
+              <>
+                <div className={`w-px h-8 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={curatorData?.profile?.avatar}
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                  <div className="hidden sm:block">
+                    <h1 className="text-sm font-bold">{curatorData?.profile.name}</h1>
+                    <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Curator
+                    </p>
                   </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
         </div>
-
-        {/* Bottom-Left Basket Details */}
-        {basketDetails && (
-          <div className="mt-4 flex items-center gap-4">
-
-            <img
-              src={basketDetails.image || 'https://i.ibb.co/7J52Ldr7/basket-svgrepo-com.png'}
-              alt="No baskets"
-              className="w-12 h-12 mb-4 opacity-50 text-center"
-            />
-            <div>
-              <h1 className="text-3xl font-bold">{basketDetails.name}</h1>
-              <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Created by {basketDetails.creator}
-              </p>
-            </div>
-          </div>
-        )}
-
       </div>
     </header>
   );
-
 };
 
 export default Header;
