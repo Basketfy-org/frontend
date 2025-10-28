@@ -31,6 +31,7 @@ import MarketPage from './src/pages/market';
 import LoginPage from './src/pages/buyers/login';
 import RegisterPage from './src/pages/buyers/register';
 import ProfilePage from './src/pages/buyers/profile';
+import FeederDashboard from './src/pages/Feeders';
 
 
 
@@ -215,7 +216,7 @@ const App = () => {
               showWalletModal={showWalletModal}
             />
           } />
-          <Route path="/market" element={
+          <Route path="/baskets" element={
             <MarketPage
               darkMode={isDarkMode}
               setBaskets={setBaskets}
@@ -302,6 +303,11 @@ const App = () => {
 
            <Route path="/profile" element={
             <ProfilePage
+              darkMode={isDarkMode}
+            />
+          } />
+             <Route path="/feeder" element={
+            <FeederDashboard
               darkMode={isDarkMode}
             />
           } />

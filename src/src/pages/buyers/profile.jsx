@@ -1,5 +1,5 @@
-    import { useNavigate } from 'react-router-dom';
-import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import {
     Mail,
     Lock,
@@ -28,17 +28,17 @@ import {
     Users,
     Award
 } from 'lucide-react';
-    import { useDispatch } from 'react-redux';
-    import { toggleDarkMode } from '../../store/store';
-    
-    const ProfilePage = ({ darkMode}) => {
-        const dispatch = useDispatch();
-            const navigate = useNavigate(); // For navigating back
+import { useDispatch } from 'react-redux';
+import { toggleDarkMode } from '../../store/store';
+
+const ProfilePage = ({ darkMode }) => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate(); // For navigating back
     const userData = {
-        name: "Chidi Okonkwo",
-        email: "chidi.okonkwo@email.com",
-        username: "@chidiinvests",
-        avatar: "https://i.pravatar.cc/150?u=chidi",
+        name: "Deborah U. Ayo",
+        email: "deeAyo@email.com",
+        username: "@dee",
+        avatar: "https://i.ibb.co/wZnfRRmg/8-V8-A2257-1702594060.webp",
         walletAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
         balance: 1250.45,
         totalInvested: 5400.00,
@@ -53,7 +53,33 @@ import {
             { id: 5, type: 'investment', amount: 450, currency: 'USDC', date: '2024-10-14', status: 'pending', basket: 'African Growth' }
         ]
     };
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        const savedState = sessionStorage.getItem('oauth_state');
 
+        if (code && state === savedState) {
+            // Step 2: send code to backend
+            // exchangeCodeForUser(code);
+        }
+    }, []);
+
+async function exchangeCodeForUser(code) {
+  try {
+    const response = await fetch('https://your-api.com/api/v1/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+
+    const data = await response.json();
+    // data => your user info + session token
+    localStorage.setItem('token', data.token);
+  } catch (err) {
+    console.error('Google sign-in failed', err);
+  }
+}
 
     return (
         <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
@@ -77,7 +103,7 @@ import {
                     </div>
                     <div className="flex items-center gap-4">
                         <button
-                            onClick={() => 
+                            onClick={() =>
                                 dispatch(toggleDarkMode())
                             }
                             className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}`}
@@ -107,7 +133,7 @@ import {
                             <h2 className="text-3xl font-bold mb-2">{userData.name}</h2>
                             <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1`}>{userData.username}</p>
                             <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'} mb-4`}>Member since {userData.joinDate}</p>
-                            
+
                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                                 <div className={`flex items-center gap-2 px-3 py-1 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
                                     <Wallet className="w-4 h-4 text-purple-400" />
@@ -116,7 +142,7 @@ import {
                                         <Copy className="w-3 h-3" />
                                     </button>
                                 </div>
-                                <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors">
+                                <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors text-white">
                                     Edit Profile
                                 </button>
                             </div>
@@ -167,10 +193,10 @@ import {
                         </button>
                         <button
                             onClick={() => navigate('/market')}
-                         className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} p-4 rounded-xl transition-colors flex flex-col items-center gap-2`}>
+                            className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} p-4 rounded-xl transition-colors flex flex-col items-center gap-2`}>
                             <ShoppingBasket className="w-6 h-6 text-green-400" />
                             <span className="font-medium">Buy Basket</span>
-                        
+
                         </button>
                         <button
                             onClick={() => setCurrentView('history')}
@@ -188,10 +214,9 @@ import {
                         {userData.transactions.slice(0, 3).map((tx) => (
                             <div key={tx.id} className={`flex items-center justify-between p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                        tx.type === 'deposit' ? 'bg-green-500/20' :
-                                        tx.type === 'investment' ? 'bg-purple-500/20' : 'bg-blue-500/20'
-                                    }`}>
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.type === 'deposit' ? 'bg-green-500/20' :
+                                            tx.type === 'investment' ? 'bg-purple-500/20' : 'bg-blue-500/20'
+                                        }`}>
                                         {tx.type === 'deposit' && <Upload className="w-5 h-5 text-green-400" />}
                                         {tx.type === 'investment' && <ShoppingBasket className="w-5 h-5 text-purple-400" />}
                                         {tx.type === 'withdrawal' && <Download className="w-5 h-5 text-blue-400" />}

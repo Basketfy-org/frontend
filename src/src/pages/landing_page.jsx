@@ -114,11 +114,11 @@ export const LandingPage = ({
                                 <li>
                                     <button
                                         onClick={() => {
-                                            navigate("/market");
+                                            navigate("/baskets");
 
                                             setIsDropdownOpen(false);
                                         }}
-                                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-700 transition-colors"
+                                        className="w-full font-light text-sm text-left px-3 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-700 transition-colors"
                                     >
                                         Explore Baskets
                                     </button>
@@ -144,9 +144,21 @@ export const LandingPage = ({
 
                                         }}
 
-                                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-700 transition-colors"
+                                        className="w-full text-left font-light text-sm px-3 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-700 transition-colors"
                                     >
                                         Login
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        onClick={() => {
+                                            navigate("/feeder");
+                                            setIsDropdownOpen(false);
+                                        }}
+
+                                        className="w-full text-left font-light text-sm px-3 py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-700 transition-colors"
+                                    >
+                                        Become a Feeder
                                     </button>
                                 </li>
                             </ul>
@@ -220,7 +232,7 @@ export const LandingPage = ({
                     <button
                         onClick={async () => {
 
-                            navigate(`explore`);
+                            navigate(`/baskets`);
                         }}
                         className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl"
                     >
@@ -403,15 +415,15 @@ export const LandingPage = ({
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
                         onClick={() => {
-                            navigate('/create');
+                            navigate('/login');
                         }}
                         className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105">
-                        Create Your Basket
+                        Join now
                     </button>
 
                     <button
                         onClick={() => {
-                            navigate('/explore');
+                            navigate('/baskets');
                         }}
                         className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-white hover:bg-gray-50 text-gray-900'} font-semibold py-4 px-8 rounded-xl transition-all duration-300 border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                         Browse Marketplace

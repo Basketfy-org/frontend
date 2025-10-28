@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Form, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
 import {
     Mail,
@@ -7,30 +7,15 @@ import {
     Eye,
     EyeOff,
     ArrowRight,
-    Check,
-    Wallet,
-    History,
-    LogOut,
-    Copy,
-    ExternalLink,
-    TrendingUp,
     DollarSign,
-    Clock,
-    Download,
-    Upload,
-    CreditCard,
-    Smartphone,
-    Building,
-    AlertCircle,
     ShoppingBasket,
     Sparkles,
-    BarChart3,
-    Users,
     Award
 } from 'lucide-react';
 
 const RegisterPage = ({ darkMode }) => {
-
+    const [isLoading, setIsLoading] = useState(false);
+    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const navigate = useNavigate(); // For navigating back or to explore
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
@@ -42,6 +27,46 @@ const RegisterPage = ({ darkMode }) => {
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
+
+    const handleRegister = (e) => {
+        e.preventDefault();
+        if (formData.email && formData.password) {
+            setIsLoading(true);
+            // Simulate API call
+            setTimeout(() => {
+                setIsLoading(false);
+                navigate('/profile');
+            }, 1000);
+        }
+    };
+
+const handleGoogleSignUp = () => {
+    setIsGoogleLoading(true);
+    
+    // Google OAuth Configuration
+    const clientId = '74186913464-afblf37anpsmm7nimjjjhip89budeb87.apps.googleusercontent.com';
+    const redirectUri = window.location.origin + '/auth/google/callback';
+    const scope = 'email profile openid';
+    const responseType = 'code';
+    const state = Math.random().toString(36).substring(7); // CSRF protection
+    
+    // Store state and signup flag in sessionStorage
+    sessionStorage.setItem('oauth_state', state);
+    sessionStorage.setItem('oauth_action', 'signup'); // Differentiate from login
+    
+    // Construct Google OAuth URL
+    const googleAuthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    googleAuthUrl.searchParams.append('client_id', clientId);
+    googleAuthUrl.searchParams.append('redirect_uri', redirectUri);
+    googleAuthUrl.searchParams.append('response_type', responseType);
+    googleAuthUrl.searchParams.append('scope', scope);
+    googleAuthUrl.searchParams.append('state', state);
+    googleAuthUrl.searchParams.append('access_type', 'offline');
+    googleAuthUrl.searchParams.append('prompt', 'consent'); // Force account selection
+    
+    // Redirect to Google OAuth
+    window.location.href = googleAuthUrl.toString();
+};
     return (
         <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-black' : 'bg-gradient-to-br from-white via-purple-50 to-gray-100'} flex items-center justify-center p-6`}>
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -86,96 +111,99 @@ const RegisterPage = ({ darkMode }) => {
 
                     <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/80'} backdrop-blur-xl rounded-2xl p-8 shadow-2xl border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                         <h2 className={`text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Create Account</h2>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-white/70' : 'text-gray-800'}`}>Full Name</label>
-                                <div className="relative">
-                                    <User className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        placeholder="Chidi Okonkwo"
-                                        value={formData.name}
-                                        onChange={handleInputChange}
-                                        className={`w-full pl-12 pr-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                                    />
+                        <form onSubmit={handleRegister}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-white/70' : 'text-gray-800'}`}>Full Name</label>
+                                    <div className="relative">
+                                        <User className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            placeholder="Deborah U. Ayo"
+                                            value={formData.name}
+                                            onChange={handleInputChange}
+                                            className={`w-full pl-12 pr-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                                        />
+                                    </div>
                                 </div>
+
+                                <div>
+                                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-white/70' : 'text-gray-800'}`}>Email Address</label>
+                                    <div className="relative">
+                                        <Mail className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            placeholder="you@example.com"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                            className={`w-full pl-12 pr-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-white/70' : 'text-gray-800'}`}>Password</label>
+                                    <div className="relative">
+                                        <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                        <input
+                                            type={showPassword ? 'text' : 'password'}
+                                            name="password"
+                                            placeholder="••••••••"
+                                            value={formData.password}
+                                            onChange={handleInputChange}
+                                            className={`w-full pl-12 pr-12 py-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                                        />
+                                        <button
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                                        >
+                                            {showPassword ?
+                                                <EyeOff className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} /> :
+                                                <Eye className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                            }
+                                        </button>
+                                    </div>
+                                    <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        At least 8 characters with a mix of letters and numbers
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-white/70' : 'text-gray-800'}`}>Confirm Password</label>
+                                    <div className="relative">
+                                        <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                                        <input
+                                            type={showPassword ? 'text' : 'password'}
+                                            name="confirmPassword"
+                                            placeholder="••••••••"
+                                            value={formData.confirmPassword}
+                                            onChange={handleInputChange}
+                                            className={`w-full pl-12 pr-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                                        />
+                                    </div>
+                                </div>
+
+                                <label className="flex items-start gap-2">
+                                    <input type="checkbox" className="mt-1 rounded" />
+                                    <span className={`text-sm ${darkMode ? 'text-white/70' : 'text-gray-800'}`}>
+                                        I agree to Basketfy's Terms of Service and Privacy Policy
+                                    </span>
+                                </label>
+
+                                <button
+                                    type="submit"
+                                    disabled={isLoading || !formData.email || !formData.password || !formData.name || formData.password !== formData.confirmPassword}
+                                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    {isLoading ? 'Creating...' : 'Create Account'}
+                                    {!isLoading && <ArrowRight className="w-5 h-5" />}
+                                </button>
                             </div>
 
-                            <div>
-                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-white/70' : 'text-gray-800'}`}>Email Address</label>
-                                <div className="relative">
-                                    <Mail className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        placeholder="you@example.com"
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                        className={`w-full pl-12 pr-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                                    />
-                                </div>
-                            </div>
 
-                            <div>
-                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-white/70' : 'text-gray-800'}`}>Password</label>
-                                <div className="relative">
-                                    <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        name="password"
-                                        placeholder="••••••••"
-                                        value={formData.password}
-                                        onChange={handleInputChange}
-                                        className={`w-full pl-12 pr-12 py-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                                    />
-                                    <button
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                                    >
-                                        {showPassword ?
-                                            <EyeOff className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} /> :
-                                            <Eye className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                                        }
-                                    </button>
-                                </div>
-                                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    At least 8 characters with a mix of letters and numbers
-                                </p>
-                            </div>
-
-                            <div>
-                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-white/70' : 'text-gray-800'}`}>Confirm Password</label>
-                                <div className="relative">
-                                    <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        name="confirmPassword"
-                                        placeholder="••••••••"
-                                        value={formData.confirmPassword}
-                                        onChange={handleInputChange}
-                                        className={`w-full pl-12 pr-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                                    />
-                                </div>
-                            </div>
-
-                            <label className="flex items-start gap-2">
-                                <input type="checkbox" className="mt-1 rounded" />
-                                <span className={`text-sm ${darkMode ? 'text-white/70' : 'text-gray-800'}`}>
-                                    I agree to Basketfy's Terms of Service and Privacy Policy
-                                </span>
-                            </label>
-
-                            <button
-                                onClick={() => navigate('/profile')}
-                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
-                            >
-                                Create Account
-                                <ArrowRight className="w-5 h-5" />
-                            </button>
-                        </div>
-
+                        </form>
                         <div className="mt-6 text-center">
                             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                 Already have an account?{' '}
