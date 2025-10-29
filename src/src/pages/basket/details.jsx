@@ -53,8 +53,8 @@ const BasketDetailPage = ({ darkMode, setShowWalletModal, }) => {
       <Header
        
         setShowWalletModal={setShowWalletModal}
-        route={'/explore'}
-        routeText='Back to Explorer'
+        route={'/baskets'}
+        routeText=''
         title="Basket Details"
         basketDetails={basketDetails}
       />

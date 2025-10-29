@@ -6,18 +6,20 @@ import App from './App.jsx'
 import { WalletProvider } from './src/hook/wallet.jsx'
 import { Toaster } from 'react-hot-toast';
 import { Buffer } from 'buffer'
-
-import { store,} from './src/store/store';
+import { PersistGate } from 'redux-persist/integration/react';
+import { store,persistor} from './src/store/store';
 window.Buffer = Buffer
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
-      
+        <PersistGate loading={null} persistor={persistor}>
+
+   
         <WalletProvider autoConnect={true}>
           <Toaster position="top-right" />
           <App />
         </WalletProvider>
-   
+        </PersistGate>
     </Provider>
   </StrictMode>,
 )

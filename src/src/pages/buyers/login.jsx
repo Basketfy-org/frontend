@@ -13,9 +13,12 @@ import {
     Users,
 } from 'lucide-react';
 import { GOOGLE_CLIENT_ID } from '../../constants/config';
+import { useDispatch } from 'react-redux';
+import { setUserData, setWalletAddress } from '../../store/store';
 
 const LoginPage = ({ darkMode }) => {
     const navigate = useNavigate(); // For navigating back
+    const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -28,6 +31,7 @@ const LoginPage = ({ darkMode }) => {
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
+    const address="77775444chcjdhjd8748dhjd8748dhjd8748dhjd"
     const handleSignIn = (e) => {
         e.preventDefault();
         if (formData.email && formData.password) {
@@ -35,6 +39,19 @@ const LoginPage = ({ darkMode }) => {
             // Simulate API call
             setTimeout(() => {
                 setIsLoading(false);
+                 // Set user data in Redux
+            dispatch(setUserData({
+                id: "xxxxxxxxx",
+                email: formData.email,
+                name: formData.name,
+                avatar: "response.avatar"||"https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
+                role: 'user'
+            }));
+            
+            // If user has wallet, set it too
+            if (address) {
+                dispatch(setWalletAddress("77775444chcjdhjd8748dhjd8748dhjd8748dhjd"));
+            }
                 navigate('/profile');
             }, 1000);
         }

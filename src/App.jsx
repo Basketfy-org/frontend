@@ -27,11 +27,13 @@ import UserBasketPage from './src/pages/buyers/basket_detail';
 import CuratorDashboard from './src/pages/curator/dashboard';
 import { useSelector, useDispatch } from 'react-redux';
 import { toggleDarkMode } from '@/src/store/store';
-import MarketPage from './src/pages/market';
 import LoginPage from './src/pages/buyers/login';
 import RegisterPage from './src/pages/buyers/register';
 import ProfilePage from './src/pages/buyers/profile';
 import FeederDashboard from './src/pages/Feeders';
+import BasketsPage from './src/pages/baskets';
+import TermsOfService from './src/pages/termsOfService';
+import PrivacyPolicy from './src/pages/privacyPolicy';
 
 
 
@@ -144,61 +146,61 @@ const App = () => {
   });
 
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    const fetchBaskets = async () => {
-      try {
-        setLoading(true);
+  //   const fetchBaskets = async () => {
+  //     try {
+  //       setLoading(true);
 
-        // Set a timeout to ensure loading is false after 1400ms
-        const timeoutId = setTimeout(() => {
-          setLoading(false);
-        }, 1400);
+  //       // Set a timeout to ensure loading is false after 1400ms
+  //       const timeoutId = setTimeout(() => {
+  //         setLoading(false);
+  //       }, 1400);
 
-        const response = await getBaskets("100");
+  //       const response = await getBaskets("100");
 
-        // Clear timeout since we got a response
-        clearTimeout(timeoutId);
+  //       // Clear timeout since we got a response
+  //       clearTimeout(timeoutId);
 
-        // Check if response exists and has data property
-        if (response && response.result && Array.isArray(response.result)) {
-          //console.log("response.data", response.result);
-          logger(`Fetched Baskets: ${response.result.length}`);
-          setBaskets(response.result);
-          stats[1].value = response.result.length;
-        } else {
-          // Handle case where response.data is undefined, null, or not an array
-          console.log("Failed to fetch baskets: Invalid response structure", response);
-          logger(`Failed to fetch baskets: Invalid response structure`);
+  //       // Check if response exists and has data property
+  //       if (response && response.result && Array.isArray(response.result)) {
+  //         //console.log("response.data", response.result);
+  //         logger(`Fetched Baskets: ${response.result.length}`);
+  //         setBaskets(response.result);
+  //         stats[1].value = response.result.length;
+  //       } else {
+  //         // Handle case where response.data is undefined, null, or not an array
+  //         console.log("Failed to fetch baskets: Invalid response structure", response);
+  //         logger(`Failed to fetch baskets: Invalid response structure`);
 
-          // Set empty array instead of undefined
-          setBaskets([]);
-          stats[1].value = 0;
-        }
-      } catch (error) {
-        logger(`Error fetching baskets: ${error.message}`);
-        console.error("Error fetching baskets:", error);
+  //         // Set empty array instead of undefined
+  //         setBaskets([]);
+  //         stats[1].value = 0;
+  //       }
+  //     } catch (error) {
+  //       logger(`Error fetching baskets: ${error.message}`);
+  //       console.error("Error fetching baskets:", error);
 
-        // Set empty array on error
-        setBaskets([]);
-        stats[1].value = 0;
-      } finally {
-        // Ensure loading is false
-        setLoading(false);
-      }
-    };
+  //       // Set empty array on error
+  //       setBaskets([]);
+  //       stats[1].value = 0;
+  //     } finally {
+  //       // Ensure loading is false
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchBaskets();
-  }, []);
+  //   fetchBaskets();
+  // }, []);
 
 
-  if (loading) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+  //       <Loader2 className="w-8 h-8 animate-spin" />
+  //     </div>
+  //   );
+  // }
 
 
   return (
@@ -217,7 +219,7 @@ const App = () => {
             />
           } />
           <Route path="/baskets" element={
-            <MarketPage
+            <BasketsPage
               darkMode={isDarkMode}
               setBaskets={setBaskets}
               setLoading={setLoading}
@@ -290,24 +292,36 @@ const App = () => {
               darkMode={isDarkMode}
             />
           } />
-           <Route path="/login" element={
+          <Route path="/login" element={
             <LoginPage
               darkMode={isDarkMode}
             />
           } />
-           <Route path="/register" element={
+          <Route path="/register" element={
             <RegisterPage
               darkMode={isDarkMode}
             />
           } />
 
-           <Route path="/profile" element={
+          <Route path="/profile" element={
             <ProfilePage
               darkMode={isDarkMode}
             />
           } />
-             <Route path="/feeder" element={
+          <Route path="/feeder" element={
             <FeederDashboard
+              darkMode={isDarkMode}
+            />
+          } />
+
+            <Route path="/terms-of-service" element={
+            <TermsOfService
+              darkMode={isDarkMode}
+            />
+          } />
+
+              <Route path="/privacy-policy" element={
+            <PrivacyPolicy
               darkMode={isDarkMode}
             />
           } />

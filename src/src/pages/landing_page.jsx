@@ -507,10 +507,14 @@ export const LandingPage = ({
                             © {year} Basketfy. All rights reserved.
                         </div>
                         <div className="flex items-center gap-6 text-sm">
-                            <button className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors`}>
+                            <button 
+                                    onClick={() => navigate('/privacy-policy')}
+                            className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors`}>
                                 Privacy Policy
                             </button>
-                            <button className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors`}>
+                            <button
+                            onClick={() => navigate('/terms-of-service')}
+                             className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors`}>
                                 Terms of Service
                             </button>
                             {/* <div className="flex items-center gap-2">
