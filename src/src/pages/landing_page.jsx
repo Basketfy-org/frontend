@@ -82,34 +82,16 @@ export const LandingPage = ({
             <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                 Basketfy
             </div>
-            <button
-                onClick={() => setIsDropdownOpen2(!isDropdownOpen2)}
-                
+               <button
+            
+                onClick={() => navigate('/faucet')}
+
                 className={`px-5 ${darkMode ? 'text-white' : 'text-black'} py-2 bg-purple-500/20 border border-purple-500/30 rounded-lg  font-mono text-sm flex items-center gap-2`}>
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                 Testnet
-                <ChevronDown className="w-4 h-4" />
-                {isDropdownOpen2 && (
-                    <div className={`absolute  left-50 mt-28 w-48 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-                        } border rounded-lg shadow-xl z-20`}>
-                        <ul className="p-2 space-y-1">
-                            <li>
-                                <button
-                                    onClick={() => {
-                                        navigate("/faucet");
-
-                                        setIsDropdownOpen2(false);
-                                    }}
-                                    className="w-full font-light text-sm text-left  py-2 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-700 transition-colors"
-                                >
-                                    Get Testnet Tokens
-                                </button>
-                            </li>
-
-                        </ul>
-                    </div>
-                )}
-            </button>
+               
+                
+             </button>
             <div className="flex items-center gap-4">
                 <button
                     onClick={() => setDarkMode(!darkMode)}
